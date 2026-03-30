@@ -1,0 +1,195 @@
+[package]
+name = "proteus"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "Shape-shifting Unix toolkit — one binary, every tool."
+repository = "https://github.com/user/proteus"
+
+[workspace]
+members = [
+    "core",
+    "applets",
+    "shell",
+]
+resolver = "3"
+
+[workspace.dependencies]
+proteus-core = { path = "core" }
+proteus-applets = { path = "applets" }
+proteus-shell = { path = "shell" }
+
+[dependencies]
+proteus-core = { workspace = true }
+proteus-applets = { workspace = true }
+proteus-shell = { workspace = true }
+
+[features]
+default = ["profile-standard"]
+
+# Build profiles
+profile-minimal = ["cat", "cp", "mv", "rm", "ls", "mkdir", "echo", "sh", "grep", "sed"]
+profile-standard = ["profile-minimal", "head", "tail", "wc", "pwd", "chmod", "chown", "chgrp", "touch", "mkdir", "rmdir", "ln", "basename", "dirname"]
+profile-full = ["profile-standard"]
+profile-container = ["profile-minimal", "ps", "kill"]
+profile-embedded = ["profile-minimal"]
+
+# GNU extension toggle
+gnu-extensions = []
+
+# Shell extensions
+shell-extended = []
+
+# Individual applets - coreutils
+cat = ["proteus-applets/cat"]
+ls = ["proteus-applets/ls"]
+cp = ["proteus-applets/cp"]
+mv = ["proteus-applets/mv"]
+rm = ["proteus-applets/rm"]
+echo = ["proteus-applets/echo"]
+head = ["proteus-applets/head"]
+tail = ["proteus-applets/tail"]
+wc = ["proteus-applets/wc"]
+pwd = ["proteus-applets/pwd"]
+mkdir = ["proteus-applets/mkdir"]
+rmdir = ["proteus-applets/rmdir"]
+touch = ["proteus-applets/touch"]
+chmod = ["proteus-applets/chmod"]
+chown = ["proteus-applets/chown"]
+chgrp = ["proteus-applets/chgrp"]
+ln = ["proteus-applets/ln"]
+basename = ["proteus-applets/basename"]
+dirname = ["proteus-applets/dirname"]
+realpath = ["proteus-applets/realpath"]
+readlink = ["proteus-applets/readlink"]
+stat = ["proteus-applets/stat"]
+mktemp = ["proteus-applets/mktemp"]
+sync = ["proteus-applets/sync"]
+true = ["proteus-applets/true"]
+false = ["proteus-applets/false"]
+yes = ["proteus-applets/yes"]
+sleep = ["proteus-applets/sleep"]
+uname = ["proteus-applets/uname"]
+id = ["proteus-applets/id"]
+whoami = ["proteus-applets/whoami"]
+groups = ["proteus-applets/groups"]
+env = ["proteus-applets/env"]
+tee = ["proteus-applets/tee"]
+printf = ["proteus-applets/printf"]
+
+# Individual applets - text processing
+grep = ["proteus-applets/grep"]
+egrep = ["proteus-applets/egrep"]
+fgrep = ["proteus-applets/fgrep"]
+sed = ["proteus-applets/sed"]
+awk = ["proteus-applets/awk"]
+sort = ["proteus-applets/sort"]
+uniq = ["proteus-applets/uniq"]
+cut = ["proteus-applets/cut"]
+paste = ["proteus-applets/paste"]
+join = ["proteus-applets/join"]
+tr = ["proteus-applets/tr"]
+tac = ["proteus-applets/tac"]
+rev = ["proteus-applets/rev"]
+fold = ["proteus-applets/fold"]
+expand = ["proteus-applets/expand"]
+unexpand = ["proteus-applets/unexpand"]
+comm = ["proteus-applets/comm"]
+
+# Individual applets - file utilities
+find = ["proteus-applets/find"]
+xargs = ["proteus-applets/xargs"]
+tar = ["proteus-applets/tar"]
+gzip = ["proteus-applets/gzip"]
+gunzip = ["proteus-applets/gunzip"]
+bzip2 = ["proteus-applets/bzip2"]
+bunzip2 = ["proteus-applets/bunzip2"]
+xz = ["proteus-applets/xz"]
+unxz = ["proteus-applets/unxz"]
+zcat = ["proteus-applets/zcat"]
+cpio = ["proteus-applets/cpio"]
+dd = ["proteus-applets/dd"]
+install = ["proteus-applets/install"]
+file = ["proteus-applets/file"]
+md5sum = ["proteus-applets/md5sum"]
+sha256sum = ["proteus-applets/sha256sum"]
+sha512sum = ["proteus-applets/sha512sum"]
+
+# Individual applets - network
+wget = ["proteus-applets/wget"]
+nc = ["proteus-applets/nc"]
+ping = ["proteus-applets/ping"]
+ping6 = ["proteus-applets/ping6"]
+traceroute = ["proteus-applets/traceroute"]
+nslookup = ["proteus-applets/nslookup"]
+hostname = ["proteus-applets/hostname"]
+ifconfig = ["proteus-applets/ifconfig"]
+ip = ["proteus-applets/ip"]
+route = ["proteus-applets/route"]
+arp = ["proteus-applets/arp"]
+telnet = ["proteus-applets/telnet"]
+
+# Individual applets - process
+ps = ["proteus-applets/ps"]
+kill = ["proteus-applets/kill"]
+killall = ["proteus-applets/killall"]
+top = ["proteus-applets/top"]
+free = ["proteus-applets/free"]
+uptime = ["proteus-applets/uptime"]
+renice = ["proteus-applets/renice"]
+nice = ["proteus-applets/nice"]
+nohup = ["proteus-applets/nohup"]
+time = ["proteus-applets/time"]
+
+# Individual applets - system
+mount = ["proteus-applets/mount"]
+umount = ["proteus-applets/umount"]
+fdisk = ["proteus-applets/fdisk"]
+mkfs-ext2 = ["proteus-applets/mkfs-ext2"]
+mkfs-vfat = ["proteus-applets/mkfs-vfat"]
+fsck = ["proteus-applets/fsck"]
+swapon = ["proteus-applets/swapon"]
+swapoff = ["proteus-applets/swapoff"]
+sysctl = ["proteus-applets/sysctl"]
+dmesg = ["proteus-applets/dmesg"]
+lsmod = ["proteus-applets/lsmod"]
+modprobe = ["proteus-applets/modprobe"]
+insmod = ["proteus-applets/insmod"]
+rmmod = ["proteus-applets/rmmod"]
+mdev = ["proteus-applets/mdev"]
+
+# Individual applets - editors
+vi = ["proteus-applets/vi"]
+diff = ["proteus-applets/diff"]
+patch = ["proteus-applets/patch"]
+ed = ["proteus-applets/ed"]
+cmp = ["proteus-applets/cmp"]
+
+# Individual applets - misc
+date = ["proteus-applets/date"]
+cal = ["proteus-applets/cal"]
+bc = ["proteus-applets/bc"]
+dc = ["proteus-applets/dc"]
+hexdump = ["proteus-applets/hexdump"]
+od = ["proteus-applets/od"]
+seq = ["proteus-applets/seq"]
+which = ["proteus-applets/which"]
+logger = ["proteus-applets/logger"]
+strings = ["proteus-applets/strings"]
+
+# Individual applets - init & service
+init = ["proteus-applets/init"]
+halt = ["proteus-applets/halt"]
+reboot = ["proteus-applets/reboot"]
+poweroff = ["proteus-applets/poweroff"]
+getty = ["proteus-applets/getty"]
+
+# Shell
+sh = ["proteus-shell/sh"]
+
+[profile.release]
+lto = true
+opt-level = "z"
+strip = true
+panic = "abort"
+codegen-units = 1

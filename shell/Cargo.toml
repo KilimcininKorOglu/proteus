@@ -1,0 +1,13 @@
+[package]
+name = "proteus-shell"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "Nereus — POSIX sh implementation for Proteus"
+
+[dependencies]
+proteus-core = { workspace = true }
+
+[features]
+sh = []
+shell-extended = []

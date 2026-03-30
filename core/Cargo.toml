@@ -1,0 +1,9 @@
+[package]
+name = "proteus-core"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "Core library for Proteus — shared infrastructure for Unix toolkit applets"
+
+[dependencies]
+libc = "0.2"
