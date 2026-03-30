@@ -28,7 +28,7 @@ proteus-shell = { workspace = true }
 default = ["profile-standard"]
 
 # Build profiles
-profile-minimal = ["cat", "cp", "mv", "rm", "ls", "mkdir", "echo", "sh", "grep", "sed"]
+profile-minimal = ["cat", "cp", "mv", "rm", "ls", "mkdir", "echo", "sh", "grep", "sed", "true", "false"]
 profile-standard = ["profile-minimal", "head", "tail", "wc", "pwd", "chmod", "chown", "chgrp", "touch", "mkdir", "rmdir", "ln", "basename", "dirname"]
 profile-full = ["profile-standard"]
 profile-container = ["profile-minimal", "ps", "kill"]
