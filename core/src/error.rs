@@ -33,3 +33,15 @@ impl From<std::io::Error> for ProteusError {
         ProteusError::Io(e)
     }
 }
+
+impl From<&str> for ProteusError {
+    fn from(msg: &str) -> Self {
+        ProteusError::Other(msg.to_string())
+    }
+}
+
+impl From<String> for ProteusError {
+    fn from(msg: String) -> Self {
+        ProteusError::Other(msg)
+    }
+}
