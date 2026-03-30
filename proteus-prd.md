@@ -274,7 +274,7 @@ Proteus'un yerleşik shell'i. İsim: Nereus — Proteus'un babası, deniz tanrı
 
 ## 7. Applet Categories & Full List
 
-### 7.1 Coreutils (35 applet)
+### 7.1 Coreutils (32 applet)
 
 | Applet | POSIX | GNU Ext | Açıklama |
 |--------|-------|---------|----------|
@@ -285,8 +285,6 @@ Proteus'un yerleşik shell'i. İsim: Nereus — Proteus'un babası, deniz tanrı
 | `cat` | Tam | Opsiyonel | Dosya birleştirme/görüntüleme |
 | `echo` | Tam | — | Stdout'a yazdırma |
 | `printf` | Tam | — | Formatlı çıktı |
-| `head` | Tam | Opsiyonel | Dosya başını göster |
-| `tail` | Tam | Opsiyonel | Dosya sonunu göster (`-f` dahil) |
 | `tee` | Tam | — | stdin'i çoğalt |
 | `ln` | Tam | — | Link oluşturma |
 | `mkdir` | Tam | — | Dizin oluşturma |
@@ -312,7 +310,6 @@ Proteus'un yerleşik shell'i. İsim: Nereus — Proteus'un babası, deniz tanrı
 | `whoami` | Tam | — | Mevcut kullanıcı |
 | `groups` | Tam | — | Kullanıcı grupları |
 | `env` | Tam | — | Ortam değişkenleri |
-| `nohup` | Tam | — | HUP sinyali engelle |
 
 ### 7.2 Text Processing (20 applet)
 
@@ -339,7 +336,7 @@ Proteus'un yerleşik shell'i. İsim: Nereus — Proteus'un babası, deniz tanrı
 | `unexpand` | Tam | — | Space → tab |
 | `comm` | Tam | — | İki dosya karşılaştırma |
 
-### 7.3 File Utilities (18 applet)
+### 7.3 File Utilities (17 applet)
 
 | Applet | POSIX | GNU Ext | Açıklama |
 |--------|-------|---------|----------|
@@ -360,7 +357,6 @@ Proteus'un yerleşik shell'i. İsim: Nereus — Proteus'un babası, deniz tanrı
 | `md5sum` | — | Evet | MD5 checksum |
 | `sha256sum` | — | Evet | SHA-256 checksum |
 | `sha512sum` | — | Evet | SHA-512 checksum |
-| `cmp` | Tam | — | Byte-level karşılaştırma |
 
 ### 7.4 Network Utilities (12 applet)
 
@@ -449,7 +445,7 @@ Proteus'un yerleşik shell'i. İsim: Nereus — Proteus'un babası, deniz tanrı
 | `poweroff` | Kapat |
 | `getty` | Terminal login |
 
-**Toplam: ~130 applet**
+**Toplam: 126 applet**
 
 ---
 
