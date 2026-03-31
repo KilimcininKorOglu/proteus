@@ -38,6 +38,20 @@ pub mod ln;
 pub mod basename;
 #[cfg(feature = "dirname")]
 pub mod dirname;
+#[cfg(feature = "printf")]
+pub mod printf;
+#[cfg(feature = "tee")]
+pub mod tee;
+#[cfg(feature = "env")]
+pub mod env;
+#[cfg(feature = "uname")]
+pub mod uname;
+#[cfg(feature = "id")]
+pub mod id;
+#[cfg(feature = "whoami")]
+pub mod whoami;
+#[cfg(feature = "groups")]
+pub mod groups;
 #[cfg(feature = "true")]
 pub mod true_cmd;
 #[cfg(feature = "false")]
@@ -136,6 +150,41 @@ pub fn run_basename(args: &[String]) -> ProteusResult<i32> {
 #[cfg(feature = "dirname")]
 pub fn run_dirname(args: &[String]) -> ProteusResult<i32> {
     dirname::run(args)
+}
+
+#[cfg(feature = "printf")]
+pub fn run_printf(args: &[String]) -> ProteusResult<i32> {
+    printf::run(args)
+}
+
+#[cfg(feature = "tee")]
+pub fn run_tee(args: &[String]) -> ProteusResult<i32> {
+    tee::run(args)
+}
+
+#[cfg(feature = "env")]
+pub fn run_env(args: &[String]) -> ProteusResult<i32> {
+    env::run(args)
+}
+
+#[cfg(feature = "uname")]
+pub fn run_uname(args: &[String]) -> ProteusResult<i32> {
+    uname::run(args)
+}
+
+#[cfg(feature = "id")]
+pub fn run_id(args: &[String]) -> ProteusResult<i32> {
+    id::run(args)
+}
+
+#[cfg(feature = "whoami")]
+pub fn run_whoami(args: &[String]) -> ProteusResult<i32> {
+    whoami::run(args)
+}
+
+#[cfg(feature = "groups")]
+pub fn run_groups(args: &[String]) -> ProteusResult<i32> {
+    groups::run(args)
 }
 
 #[cfg(feature = "true")]

@@ -222,10 +222,11 @@ pub fn default_policy_for(applet: &str) -> Option<SandboxPolicy> {
                     Capability::DacOverride,
                 ]),
         ),
-        "echo" | "true" | "false" => Some(
+        "echo" | "printf" | "true" | "false" | "env" | "id" | "whoami" | "groups" | "uname" | "date" | "seq" => Some(
             SandboxPolicy::new(applet).with_syscalls(&[
                 SyscallClass::Process,
                 SyscallClass::Terminal,
+                SyscallClass::Time,
             ]),
         ),
         "grep" | "egrep" | "fgrep" | "sort" | "uniq" | "cut" | "tr" | "sed" | "awk" => Some(
@@ -246,13 +247,14 @@ pub fn default_policy_for(applet: &str) -> Option<SandboxPolicy> {
                 SyscallClass::Terminal,
             ]),
         ),
-        "tar" | "gzip" => Some(
+        "tar" | "gzip" | "tee" | "od" => Some(
             SandboxPolicy::new(applet).with_syscalls(&[
                 SyscallClass::ReadOnlyFs,
                 SyscallClass::WriteFs,
                 SyscallClass::Metadata,
                 SyscallClass::Memory,
                 SyscallClass::Process,
+                SyscallClass::Terminal,
             ]),
         ),
         "xargs" => Some(

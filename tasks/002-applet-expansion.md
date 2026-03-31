@@ -186,7 +186,7 @@ This milestone should be delayed until shell and text primitives are mature enou
 
 ### T012: Fill remaining coreutils and misc gaps
 
-**Status:** NOT_STARTED
+**Status:** COMPLETED
 **Priority:** P2
 **Estimated Effort:** 6 days
 

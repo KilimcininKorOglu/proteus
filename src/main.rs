@@ -147,6 +147,20 @@ fn dispatch(name: &str, args: &[String], runtime_context: &RuntimeContext) -> Pr
         "basename" => proteus_applets::coreutils::run_basename(args),
         #[cfg(feature = "dirname")]
         "dirname" => proteus_applets::coreutils::run_dirname(args),
+        #[cfg(feature = "printf")]
+        "printf" => proteus_applets::coreutils::run_printf(args),
+        #[cfg(feature = "tee")]
+        "tee" => proteus_applets::coreutils::run_tee(args),
+        #[cfg(feature = "env")]
+        "env" => proteus_applets::coreutils::run_env(args),
+        #[cfg(feature = "uname")]
+        "uname" => proteus_applets::coreutils::run_uname(args),
+        #[cfg(feature = "id")]
+        "id" => proteus_applets::coreutils::run_id(args),
+        #[cfg(feature = "whoami")]
+        "whoami" => proteus_applets::coreutils::run_whoami(args),
+        #[cfg(feature = "groups")]
+        "groups" => proteus_applets::coreutils::run_groups(args),
         #[cfg(feature = "true")]
         "true" => proteus_applets::coreutils::run_true(args),
         #[cfg(feature = "false")]
@@ -177,6 +191,12 @@ fn dispatch(name: &str, args: &[String], runtime_context: &RuntimeContext) -> Pr
         "tar" => proteus_applets::fileutils::tar::run(args),
         #[cfg(feature = "gzip")]
         "gzip" => proteus_applets::fileutils::gzip::run(args),
+        #[cfg(feature = "date")]
+        "date" => proteus_applets::misc::date::run(args),
+        #[cfg(feature = "od")]
+        "od" => proteus_applets::misc::od::run(args),
+        #[cfg(feature = "seq")]
+        "seq" => proteus_applets::misc::seq::run(args),
         #[cfg(feature = "sh")]
         "sh" => proteus_shell::run_shell(args),
         _ => {
@@ -276,6 +296,13 @@ fn default_sandboxed_applet(applet_name: &str) -> bool {
             | "ln"
             | "basename"
             | "dirname"
+            | "printf"
+            | "tee"
+            | "env"
+            | "uname"
+            | "id"
+            | "whoami"
+            | "groups"
             | "true"
             | "false"
             | "grep"
@@ -291,6 +318,9 @@ fn default_sandboxed_applet(applet_name: &str) -> bool {
             | "xargs"
             | "tar"
             | "gzip"
+            | "date"
+            | "od"
+            | "seq"
             | "sh"
     )
 }
@@ -521,6 +551,60 @@ fn applet_help(name: &str) -> Option<AppletHelp> {
             ],
             vec!["Current implementation supports a minimal print-oriented awk subset.".to_string()],
         ),
+        "printf" => AppletHelp::new(
+            "proteus printf FORMAT [ARG...]",
+            vec![
+                AppletOption::new("%s", "string substitution"),
+                AppletOption::new("%d", "decimal integer substitution"),
+                AppletOption::new("%b", "backslash-escape interpretation"),
+            ],
+            vec!["Implements a compact printf subset for common shell usage.".to_string()],
+        ),
+        "tee" => AppletHelp::new(
+            "proteus tee [-a] [FILE...]",
+            vec![AppletOption::new("-a", "append to files instead of truncating")],
+            vec!["Always writes stdin to stdout and any provided files.".to_string()],
+        ),
+        "env" => AppletHelp::new(
+            "proteus env [KEY=VALUE ...] [COMMAND [ARG...]]",
+            vec![AppletOption::new("KEY=VALUE", "set environment variables before an optional command")],
+            vec!["Without COMMAND, prints the current environment.".to_string()],
+        ),
+        "uname" => AppletHelp::new(
+            "proteus uname [-a]",
+            vec![AppletOption::new("-a", "print system, node, release, and machine data")],
+            vec!["Uses the platform abstraction for hostname data.".to_string()],
+        ),
+        "id" => AppletHelp::new(
+            "proteus id",
+            Vec::new(),
+            vec!["Prints effective uid and gid.".to_string()],
+        ),
+        "whoami" => AppletHelp::new(
+            "proteus whoami",
+            Vec::new(),
+            vec!["Prints $USER when available, otherwise the effective uid.".to_string()],
+        ),
+        "groups" => AppletHelp::new(
+            "proteus groups",
+            Vec::new(),
+            vec!["Prints the effective group id as the current minimal implementation.".to_string()],
+        ),
+        "date" => AppletHelp::new(
+            "proteus date",
+            Vec::new(),
+            vec!["Delegates to the host date command for formatted output.".to_string()],
+        ),
+        "od" => AppletHelp::new(
+            "proteus od [FILE]",
+            Vec::new(),
+            vec!["Prints octal byte dumps in fixed-width rows.".to_string()],
+        ),
+        "seq" => AppletHelp::new(
+            "proteus seq END | START END",
+            Vec::new(),
+            vec!["Prints inclusive integer sequences.".to_string()],
+        ),
         "tr" => AppletHelp::new(
             "proteus tr [-d] SET1 [SET2] [FILE...]",
             vec![
@@ -627,6 +711,15 @@ fn available_applet_metadata() -> Vec<AppletMetadata> {
         "echo",
         true,
     ));
+    #[cfg(feature = "env")]
+    applets.push(AppletMetadata::new(
+        "env",
+        AppletCategory::Coreutils,
+        PosixLevel::Partial,
+        "Inspect or run commands with environment variables",
+        "env",
+        true,
+    ));
     #[cfg(feature = "false")]
     applets.push(AppletMetadata::new(
         "false",
@@ -708,6 +801,15 @@ fn available_applet_metadata() -> Vec<AppletMetadata> {
         "ln",
         true,
     ));
+    #[cfg(feature = "groups")]
+    applets.push(AppletMetadata::new(
+        "groups",
+        AppletCategory::Coreutils,
+        PosixLevel::Partial,
+        "Print current group information",
+        "groups",
+        true,
+    ));
     #[cfg(feature = "find")]
     applets.push(AppletMetadata::new(
         "find",
@@ -742,6 +844,15 @@ fn available_applet_metadata() -> Vec<AppletMetadata> {
         PosixLevel::Substantial,
         "Create directories",
         "mkdir",
+        true,
+    ));
+    #[cfg(feature = "id")]
+    applets.push(AppletMetadata::new(
+        "id",
+        AppletCategory::Coreutils,
+        PosixLevel::Partial,
+        "Print effective user and group identifiers",
+        "id",
         true,
     ));
     #[cfg(feature = "mv")]
@@ -816,6 +927,15 @@ fn available_applet_metadata() -> Vec<AppletMetadata> {
         "touch",
         true,
     ));
+    #[cfg(feature = "tee")]
+    applets.push(AppletMetadata::new(
+        "tee",
+        AppletCategory::Coreutils,
+        PosixLevel::Partial,
+        "Copy standard input to standard output and files",
+        "tee",
+        true,
+    ));
     #[cfg(feature = "tar")]
     applets.push(AppletMetadata::new(
         "tar",
@@ -843,6 +963,15 @@ fn available_applet_metadata() -> Vec<AppletMetadata> {
         "true",
         true,
     ));
+    #[cfg(feature = "printf")]
+    applets.push(AppletMetadata::new(
+        "printf",
+        AppletCategory::Coreutils,
+        PosixLevel::Partial,
+        "Format and print arguments",
+        "printf",
+        true,
+    ));
     #[cfg(feature = "uniq")]
     applets.push(AppletMetadata::new(
         "uniq",
@@ -852,6 +981,24 @@ fn available_applet_metadata() -> Vec<AppletMetadata> {
         "uniq",
         true,
     ));
+    #[cfg(feature = "uname")]
+    applets.push(AppletMetadata::new(
+        "uname",
+        AppletCategory::Coreutils,
+        PosixLevel::Partial,
+        "Print system information",
+        "uname",
+        true,
+    ));
+    #[cfg(feature = "whoami")]
+    applets.push(AppletMetadata::new(
+        "whoami",
+        AppletCategory::Coreutils,
+        PosixLevel::Partial,
+        "Print the current effective user name",
+        "whoami",
+        true,
+    ));
     #[cfg(feature = "xargs")]
     applets.push(AppletMetadata::new(
         "xargs",
@@ -859,6 +1006,33 @@ fn available_applet_metadata() -> Vec<AppletMetadata> {
         PosixLevel::Partial,
         "Build command lines from standard input",
         "xargs",
+        true,
+    ));
+    #[cfg(feature = "date")]
+    applets.push(AppletMetadata::new(
+        "date",
+        AppletCategory::Misc,
+        PosixLevel::Partial,
+        "Print date and time information",
+        "date",
+        true,
+    ));
+    #[cfg(feature = "od")]
+    applets.push(AppletMetadata::new(
+        "od",
+        AppletCategory::Misc,
+        PosixLevel::Partial,
+        "Dump file contents in octal form",
+        "od",
+        true,
+    ));
+    #[cfg(feature = "seq")]
+    applets.push(AppletMetadata::new(
+        "seq",
+        AppletCategory::Misc,
+        PosixLevel::None,
+        "Generate numeric sequences",
+        "seq",
         true,
     ));
     #[cfg(feature = "wc")]

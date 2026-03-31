@@ -2,9 +2,9 @@
 
 **Last Updated:** 2026-03-31
 **Total Tasks:** 27
-**Completed:** 11
+**Completed:** 12
 **In Progress:** 0
-**Not Started:** 16
+**Not Started:** 15
 **Blocked:** 0
 
 ## Progress Overview
@@ -24,8 +24,8 @@
 - **P4 (Low):** 0 tasks
 
 ## Changes Since Last Update
-- Added: A new `--sandbox-info <applet>` runtime surface now exposes sandbox mode, backend, syscall classes, capabilities, and fallback notes for implemented applets.
-- Modified: Completed T023 and validated the security policy surface with passing sandbox info tests plus release-build verification.
+- Added: Filled a coreutils/misc batch with `printf`, `tee`, `env`, `uname`, `id`, `whoami`, `groups`, `date`, `od`, and `seq`, including dispatch, metadata, help, and sandbox wiring.
+- Modified: Completed T012 and validated the new commands with passing binary-level tests plus release-build smoke checks.
 - Warnings: PRD still states `MIT OR Apache-2.0`, but `Cargo.toml` is currently MIT-only. `cargo fmt --all --check` still reports pre-existing repository-wide formatting drift unrelated to this task.
 
 ## Milestone Timeline
@@ -40,10 +40,10 @@
 | v0.8-v1.0 | Compliance, CI, release, cross-platform       | F004             |
 
 ## Current Sprint Focus
-- T012: Fill remaining coreutils and misc gaps
 - T005: Add build tooling crate
 - T022: Add CI workflows
 - T017: Implement interactive line editing and REPL
+- T024: Add size and compliance automation
 
 ## Blocked Tasks
 - None currently blocked at the planning level.

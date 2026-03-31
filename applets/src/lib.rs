@@ -1,6 +1,7 @@
 pub mod coreutils;
 pub mod textutils;
 pub mod fileutils;
+pub mod misc;
 
 use proteus_core::ProteusResult;
 
