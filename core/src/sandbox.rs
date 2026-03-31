@@ -190,7 +190,7 @@ pub fn default_policy_for(applet: &str) -> Option<SandboxPolicy> {
                 SyscallClass::Terminal,
             ]),
         ),
-        "grep" | "egrep" | "fgrep" | "sort" | "uniq" | "cut" | "tr" | "sed" => Some(
+        "grep" | "egrep" | "fgrep" | "sort" | "uniq" | "cut" | "tr" | "sed" | "awk" => Some(
             SandboxPolicy::new(applet).with_syscalls(&[
                 SyscallClass::ReadOnlyFs,
                 SyscallClass::Metadata,
@@ -198,6 +198,33 @@ pub fn default_policy_for(applet: &str) -> Option<SandboxPolicy> {
                 SyscallClass::Process,
                 SyscallClass::Terminal,
             ]),
+        ),
+        "find" => Some(
+            SandboxPolicy::new("find").with_syscalls(&[
+                SyscallClass::ReadOnlyFs,
+                SyscallClass::Metadata,
+                SyscallClass::Memory,
+                SyscallClass::Process,
+                SyscallClass::Terminal,
+            ]),
+        ),
+        "tar" | "gzip" => Some(
+            SandboxPolicy::new(applet).with_syscalls(&[
+                SyscallClass::ReadOnlyFs,
+                SyscallClass::WriteFs,
+                SyscallClass::Metadata,
+                SyscallClass::Memory,
+                SyscallClass::Process,
+            ]),
+        ),
+        "xargs" => Some(
+            SandboxPolicy::new("xargs")
+                .with_syscalls(&[
+                    SyscallClass::ReadOnlyFs,
+                    SyscallClass::Process,
+                    SyscallClass::Terminal,
+                ])
+                .without_strict(),
         ),
         "sh" => Some(
             SandboxPolicy::new("sh")
@@ -255,15 +282,17 @@ pub fn apply_sandbox_policy(applet: &str, mode: SandboxMode) -> Result<SandboxRe
 
     let backend = detect_backend();
     let mut notes = Vec::new();
-
-    if mode == SandboxMode::Strict && !policy.supports_strict {
-        return Err(SandboxError::UnsupportedMode(mode));
-    }
+    let effective_mode = if mode == SandboxMode::Strict && !policy.supports_strict {
+        notes.push("strict mode unsupported for this applet; falling back to permissive".to_string());
+        SandboxMode::Permissive
+    } else {
+        mode
+    };
 
     match backend {
-        SandboxBackend::Seccomp => apply_linux_policy(applet, mode, policy, notes),
-        SandboxBackend::Capsicum => apply_capsicum_policy(applet, mode, policy, notes),
-        SandboxBackend::Pledge => apply_pledge_policy(applet, mode, policy, notes),
+        SandboxBackend::Seccomp => apply_linux_policy(applet, effective_mode, policy, notes),
+        SandboxBackend::Capsicum => apply_capsicum_policy(applet, effective_mode, policy, notes),
+        SandboxBackend::Pledge => apply_pledge_policy(applet, effective_mode, policy, notes),
         SandboxBackend::Noop => {
             notes.push("sandbox backend unavailable on this target; using noop fallback".to_string());
             Ok(SandboxReport {

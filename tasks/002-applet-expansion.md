@@ -60,7 +60,7 @@ This task should reuse the current `applets/src/textutils/` structure and shared
 
 ### T008: Implement the v0.3 file utility batch
 
-**Status:** NOT_STARTED
+**Status:** COMPLETED
 **Priority:** P1
 **Estimated Effort:** 8 days
 

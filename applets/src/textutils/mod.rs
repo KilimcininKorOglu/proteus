@@ -20,6 +20,8 @@ pub mod cut;
 pub mod tr;
 #[cfg(feature = "uniq")]
 pub mod uniq;
+#[cfg(feature = "awk")]
+pub mod awk;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MatchMode {

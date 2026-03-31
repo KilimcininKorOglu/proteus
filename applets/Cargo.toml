@@ -8,6 +8,7 @@ description = "Individual tool implementations for Proteus"
 [dependencies]
 proteus-core = { workspace = true }
 libc = "0.2"
+miniz_oxide = "0.8"
 
 [features]
 # Coreutils
@@ -42,3 +43,10 @@ sort = []
 cut = []
 tr = []
 uniq = []
+awk = []
+
+# File utilities
+find = []
+xargs = []
+tar = []
+gzip = []

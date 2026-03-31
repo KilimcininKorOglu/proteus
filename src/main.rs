@@ -166,6 +166,16 @@ fn dispatch(name: &str, args: &[String], runtime_context: &RuntimeContext) -> Pr
         "tr" => proteus_applets::textutils::tr::run(args),
         #[cfg(feature = "uniq")]
         "uniq" => proteus_applets::textutils::uniq::run(args),
+        #[cfg(feature = "awk")]
+        "awk" => proteus_applets::textutils::awk::run(args),
+        #[cfg(feature = "find")]
+        "find" => proteus_applets::fileutils::find::run(args),
+        #[cfg(feature = "xargs")]
+        "xargs" => proteus_applets::fileutils::xargs::run(args),
+        #[cfg(feature = "tar")]
+        "tar" => proteus_applets::fileutils::tar::run(args),
+        #[cfg(feature = "gzip")]
+        "gzip" => proteus_applets::fileutils::gzip::run(args),
         #[cfg(feature = "sh")]
         "sh" => proteus_shell::run_shell(args),
         _ => {
@@ -275,6 +285,11 @@ fn default_sandboxed_applet(applet_name: &str) -> bool {
             | "cut"
             | "tr"
             | "uniq"
+            | "awk"
+            | "find"
+            | "xargs"
+            | "tar"
+            | "gzip"
             | "sh"
     )
 }
@@ -436,6 +451,47 @@ fn applet_help(name: &str) -> Option<AppletHelp> {
             ],
             vec!["Sorts the full input set in memory.".to_string()],
         ),
+        "find" => AppletHelp::new(
+            "proteus find [PATH...] [-name PATTERN] [-type f|d]",
+            vec![
+                AppletOption::new("-name PATTERN", "filter by simple prefix/suffix/exact pattern"),
+                AppletOption::new("-type f|d", "filter by file or directory type"),
+            ],
+            vec!["Defaults to the current directory when no PATH is provided.".to_string()],
+        ),
+        "xargs" => AppletHelp::new(
+            "proteus xargs [-0] [COMMAND [ARG...]]",
+            vec![
+                AppletOption::new("-0", "read NUL-delimited input items"),
+            ],
+            vec!["Executes the given command once with all collected input items.".to_string()],
+        ),
+        "tar" => AppletHelp::new(
+            "proteus tar (-c|-x) -f ARCHIVE [PATH...]",
+            vec![
+                AppletOption::new("-c", "create an archive"),
+                AppletOption::new("-x", "extract an archive"),
+                AppletOption::new("-f ARCHIVE", "use the given tar file"),
+            ],
+            vec!["Implements a ustar-style archive for regular files.".to_string()],
+        ),
+        "gzip" => AppletHelp::new(
+            "proteus gzip [-cd] [FILE]",
+            vec![
+                AppletOption::new("-c", "write compressed or decompressed data to stdout"),
+                AppletOption::new("-d", "decompress instead of compressing"),
+            ],
+            vec!["Uses miniz_oxide for deflate/inflate operations.".to_string()],
+        ),
+        "awk" => AppletHelp::new(
+            "proteus awk '{print | print $N | print NR}' [FILE...]",
+            vec![
+                AppletOption::new("{print}", "print the entire current line"),
+                AppletOption::new("{print $N}", "print the Nth whitespace-delimited field"),
+                AppletOption::new("{print NR}", "print the current record number"),
+            ],
+            vec!["Current implementation supports a minimal print-oriented awk subset.".to_string()],
+        ),
         "tr" => AppletHelp::new(
             "proteus tr [-d] SET1 [SET2] [FILE...]",
             vec![
@@ -551,6 +607,15 @@ fn available_applet_metadata() -> Vec<AppletMetadata> {
         "false",
         true,
     ));
+    #[cfg(feature = "awk")]
+    applets.push(AppletMetadata::new(
+        "awk",
+        AppletCategory::TextProcessing,
+        PosixLevel::Partial,
+        "Run a minimal awk print subset",
+        "awk",
+        true,
+    ));
     #[cfg(feature = "egrep")]
     applets.push(AppletMetadata::new(
         "egrep",
@@ -578,6 +643,15 @@ fn available_applet_metadata() -> Vec<AppletMetadata> {
         "grep",
         true,
     ));
+    #[cfg(feature = "gzip")]
+    applets.push(AppletMetadata::new(
+        "gzip",
+        AppletCategory::FileUtilities,
+        PosixLevel::None,
+        "Compress or decompress gzip streams",
+        "gzip",
+        true,
+    ));
     #[cfg(feature = "cut")]
     applets.push(AppletMetadata::new(
         "cut",
@@ -603,6 +677,15 @@ fn available_applet_metadata() -> Vec<AppletMetadata> {
         PosixLevel::Substantial,
         "Create file links",
         "ln",
+        true,
+    ));
+    #[cfg(feature = "find")]
+    applets.push(AppletMetadata::new(
+        "find",
+        AppletCategory::FileUtilities,
+        PosixLevel::Partial,
+        "Walk directory trees and filter paths",
+        "find",
         true,
     ));
     #[cfg(feature = "sed")]
@@ -704,6 +787,15 @@ fn available_applet_metadata() -> Vec<AppletMetadata> {
         "touch",
         true,
     ));
+    #[cfg(feature = "tar")]
+    applets.push(AppletMetadata::new(
+        "tar",
+        AppletCategory::FileUtilities,
+        PosixLevel::Partial,
+        "Create or extract tar archives",
+        "tar",
+        true,
+    ));
     #[cfg(feature = "tr")]
     applets.push(AppletMetadata::new(
         "tr",
@@ -729,6 +821,15 @@ fn available_applet_metadata() -> Vec<AppletMetadata> {
         PosixLevel::Partial,
         "Filter adjacent repeated lines",
         "uniq",
+        true,
+    ));
+    #[cfg(feature = "xargs")]
+    applets.push(AppletMetadata::new(
+        "xargs",
+        AppletCategory::FileUtilities,
+        PosixLevel::Partial,
+        "Build command lines from standard input",
+        "xargs",
         true,
     ));
     #[cfg(feature = "wc")]

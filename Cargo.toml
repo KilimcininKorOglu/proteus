@@ -29,9 +29,9 @@ default = ["profile-standard"]
 
 # Build profiles
 profile-minimal = ["cat", "cp", "mv", "rm", "ls", "mkdir", "echo", "sh", "grep", "egrep", "fgrep", "true", "false"]
-profile-standard = ["profile-minimal", "head", "tail", "wc", "pwd", "chmod", "chown", "chgrp", "touch", "rmdir", "ln", "basename", "dirname", "sed", "sort", "cut", "tr", "uniq"]
+profile-standard = ["profile-minimal", "head", "tail", "wc", "pwd", "chmod", "chown", "chgrp", "touch", "rmdir", "ln", "basename", "dirname", "sed", "sort", "cut", "tr", "uniq", "awk", "find", "xargs", "tar", "gzip"]
 profile-full = ["profile-standard"]
-profile-container = ["profile-minimal", "head", "tail", "wc", "pwd", "sed", "sort", "cut", "tr", "uniq"]
+profile-container = ["profile-minimal", "head", "tail", "wc", "pwd", "sed", "sort", "cut", "tr", "uniq", "awk", "find", "xargs", "tar", "gzip"]
 profile-embedded = ["profile-minimal"]
 
 # GNU extension toggle
@@ -72,6 +72,13 @@ sort = ["proteus-applets/sort"]
 cut = ["proteus-applets/cut"]
 tr = ["proteus-applets/tr"]
 uniq = ["proteus-applets/uniq"]
+awk = ["proteus-applets/awk"]
+
+# Individual applets - file utilities
+find = ["proteus-applets/find"]
+xargs = ["proteus-applets/xargs"]
+tar = ["proteus-applets/tar"]
+gzip = ["proteus-applets/gzip"]
 
 # Shell
 sh = ["proteus-shell/sh"]

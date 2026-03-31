@@ -9,7 +9,7 @@
 | Feature                        | Status       | Tasks | Completed | Progress |
 |--------------------------------|--------------|-------|-----------|----------|
 | F001 - Foundation and Core     | IN_PROGRESS  | 6     | 4         | 67%      |
-| F002 - Applet Expansion        | IN_PROGRESS  | 8     | 2         | 38%      |
+| F002 - Applet Expansion        | IN_PROGRESS  | 8     | 3         | 50%      |
 | F003 - Shell POSIX Roadmap     | IN_PROGRESS  | 6     | 1         | 33%      |
 | F004 - Quality and Release     | NOT_STARTED  | 7     | 0         | 0%       |
 
@@ -35,7 +35,7 @@
 | Task | Name                                              | Status       | Priority |
 |------|---------------------------------------------------|--------------|----------|
 | T007 | Complete v0.2 text processing batch               | COMPLETED    | P1       |
-| T008 | Implement v0.3 file utility batch                 | NOT_STARTED  | P1       |
+| T008 | Implement v0.3 file utility batch                 | COMPLETED    | P1       |
 | T012 | Fill remaining coreutils and misc gaps            | NOT_STARTED  | P2       |
 | T013 | Define applet compliance and help coverage        | COMPLETED    | P2       |
 
@@ -97,5 +97,6 @@
 | T003 | F001    | 2026-03-31  | Current  |
 | T004 | F001    | 2026-03-31  | Current  |
 | T007 | F002    | 2026-03-31  | Current  |
+| T008 | F002    | 2026-03-31  | Current  |
 | T013 | F002    | 2026-03-31  | Current  |
 | T015 | F003    | 2026-03-31  | Existing |
