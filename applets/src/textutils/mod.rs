@@ -10,6 +10,16 @@ pub mod grep;
 pub mod egrep;
 #[cfg(feature = "fgrep")]
 pub mod fgrep;
+#[cfg(feature = "sed")]
+pub mod sed;
+#[cfg(feature = "sort")]
+pub mod sort;
+#[cfg(feature = "cut")]
+pub mod cut;
+#[cfg(feature = "tr")]
+pub mod tr;
+#[cfg(feature = "uniq")]
+pub mod uniq;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MatchMode {
@@ -192,6 +202,64 @@ pub fn run_grep(args: &[String], default_mode: MatchMode, applet_name: &str) -> 
     } else {
         Ok(1)
     }
+}
+
+pub fn for_each_input<F>(files: &[String], mut callback: F) -> ProteusResult<()>
+where
+    F: FnMut(&mut dyn BufRead, Option<&str>) -> ProteusResult<()>,
+{
+    if files.is_empty() {
+        let stdin = io::stdin();
+        let mut reader = stdin.lock();
+        callback(&mut reader, None)?;
+        return Ok(());
+    }
+
+    for file in files {
+        if file == "-" {
+            let stdin = io::stdin();
+            let mut reader = stdin.lock();
+            callback(&mut reader, None)?;
+            continue;
+        }
+
+        let handle = File::open(file).map_err(|error| ProteusError::Other(format!("{file}: {error}")))?;
+        let mut reader = BufReader::new(handle);
+        callback(&mut reader, Some(file.as_str()))?;
+    }
+
+    Ok(())
+}
+
+pub fn read_all_lines(files: &[String]) -> ProteusResult<Vec<String>> {
+    let mut lines = Vec::new();
+    for_each_input(files, |reader, _file_name| {
+        let mut line = String::new();
+        loop {
+            line.clear();
+            let bytes = reader.read_line(&mut line)?;
+            if bytes == 0 {
+                break;
+            }
+            lines.push(strip_line_ending(&line).to_string());
+        }
+        Ok(())
+    })?;
+    Ok(lines)
+}
+
+pub fn read_all_text(files: &[String]) -> ProteusResult<String> {
+    let mut text = String::new();
+    for_each_input(files, |reader, _file_name| {
+        reader.read_to_string(&mut text)?;
+        Ok(())
+    })?;
+    Ok(text)
+}
+
+pub fn strip_line_ending(line: &str) -> &str {
+    let line = line.strip_suffix('\n').unwrap_or(line);
+    line.strip_suffix('\r').unwrap_or(line)
 }
 
 enum Matcher {

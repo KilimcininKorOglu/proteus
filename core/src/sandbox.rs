@@ -190,7 +190,7 @@ pub fn default_policy_for(applet: &str) -> Option<SandboxPolicy> {
                 SyscallClass::Terminal,
             ]),
         ),
-        "grep" | "egrep" | "fgrep" => Some(
+        "grep" | "egrep" | "fgrep" | "sort" | "uniq" | "cut" | "tr" | "sed" => Some(
             SandboxPolicy::new(applet).with_syscalls(&[
                 SyscallClass::ReadOnlyFs,
                 SyscallClass::Metadata,

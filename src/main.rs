@@ -152,6 +152,16 @@ fn dispatch(name: &str, args: &[String], runtime_context: &RuntimeContext) -> Pr
         "egrep" => proteus_applets::textutils::egrep::run(args),
         #[cfg(feature = "fgrep")]
         "fgrep" => proteus_applets::textutils::fgrep::run(args),
+        #[cfg(feature = "sed")]
+        "sed" => proteus_applets::textutils::sed::run(args),
+        #[cfg(feature = "sort")]
+        "sort" => proteus_applets::textutils::sort::run(args),
+        #[cfg(feature = "cut")]
+        "cut" => proteus_applets::textutils::cut::run(args),
+        #[cfg(feature = "tr")]
+        "tr" => proteus_applets::textutils::tr::run(args),
+        #[cfg(feature = "uniq")]
+        "uniq" => proteus_applets::textutils::uniq::run(args),
         #[cfg(feature = "sh")]
         "sh" => proteus_shell::run_shell(args),
         _ => {
@@ -256,6 +266,11 @@ fn default_sandboxed_applet(applet_name: &str) -> bool {
             | "grep"
             | "egrep"
             | "fgrep"
+            | "sed"
+            | "sort"
+            | "cut"
+            | "tr"
+            | "uniq"
             | "sh"
     )
 }
@@ -416,6 +431,15 @@ fn available_applet_metadata() -> Vec<AppletMetadata> {
         "grep",
         true,
     ));
+    #[cfg(feature = "cut")]
+    applets.push(AppletMetadata::new(
+        "cut",
+        AppletCategory::TextProcessing,
+        PosixLevel::Partial,
+        "Select portions of each input line",
+        "cut",
+        true,
+    ));
     #[cfg(feature = "head")]
     applets.push(AppletMetadata::new(
         "head",
@@ -432,6 +456,15 @@ fn available_applet_metadata() -> Vec<AppletMetadata> {
         PosixLevel::Substantial,
         "Create file links",
         "ln",
+        true,
+    ));
+    #[cfg(feature = "sed")]
+    applets.push(AppletMetadata::new(
+        "sed",
+        AppletCategory::TextProcessing,
+        PosixLevel::Partial,
+        "Apply stream editing substitutions",
+        "sed",
         true,
     ));
     #[cfg(feature = "ls")]
@@ -497,6 +530,15 @@ fn available_applet_metadata() -> Vec<AppletMetadata> {
         "sh",
         true,
     ));
+    #[cfg(feature = "sort")]
+    applets.push(AppletMetadata::new(
+        "sort",
+        AppletCategory::TextProcessing,
+        PosixLevel::Partial,
+        "Sort input lines",
+        "sort",
+        true,
+    ));
     #[cfg(feature = "tail")]
     applets.push(AppletMetadata::new(
         "tail",
@@ -515,6 +557,15 @@ fn available_applet_metadata() -> Vec<AppletMetadata> {
         "touch",
         true,
     ));
+    #[cfg(feature = "tr")]
+    applets.push(AppletMetadata::new(
+        "tr",
+        AppletCategory::TextProcessing,
+        PosixLevel::Partial,
+        "Translate or delete characters",
+        "tr",
+        true,
+    ));
     #[cfg(feature = "true")]
     applets.push(AppletMetadata::new(
         "true",
@@ -522,6 +573,15 @@ fn available_applet_metadata() -> Vec<AppletMetadata> {
         PosixLevel::Full,
         "Return a zero exit status",
         "true",
+        true,
+    ));
+    #[cfg(feature = "uniq")]
+    applets.push(AppletMetadata::new(
+        "uniq",
+        AppletCategory::TextProcessing,
+        PosixLevel::Partial,
+        "Filter adjacent repeated lines",
+        "uniq",
         true,
     ));
     #[cfg(feature = "wc")]

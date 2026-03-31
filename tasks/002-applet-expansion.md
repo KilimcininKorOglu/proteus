@@ -29,7 +29,7 @@ The intent is not to finish all applets at once. Instead, this plan groups them 
 
 ### T007: Complete the planned v0.2 text processing batch
 
-**Status:** IN_PROGRESS
+**Status:** COMPLETED
 **Priority:** P1
 **Estimated Effort:** 6 days
 

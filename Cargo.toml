@@ -29,9 +29,9 @@ default = ["profile-standard"]
 
 # Build profiles
 profile-minimal = ["cat", "cp", "mv", "rm", "ls", "mkdir", "echo", "sh", "grep", "egrep", "fgrep", "true", "false"]
-profile-standard = ["profile-minimal", "head", "tail", "wc", "pwd", "chmod", "chown", "chgrp", "touch", "rmdir", "ln", "basename", "dirname"]
+profile-standard = ["profile-minimal", "head", "tail", "wc", "pwd", "chmod", "chown", "chgrp", "touch", "rmdir", "ln", "basename", "dirname", "sed", "sort", "cut", "tr", "uniq"]
 profile-full = ["profile-standard"]
-profile-container = ["profile-minimal", "head", "tail", "wc", "pwd"]
+profile-container = ["profile-minimal", "head", "tail", "wc", "pwd", "sed", "sort", "cut", "tr", "uniq"]
 profile-embedded = ["profile-minimal"]
 
 # GNU extension toggle
@@ -67,6 +67,11 @@ false = ["proteus-applets/false"]
 grep = ["proteus-applets/grep"]
 egrep = ["proteus-applets/egrep"]
 fgrep = ["proteus-applets/fgrep"]
+sed = ["proteus-applets/sed"]
+sort = ["proteus-applets/sort"]
+cut = ["proteus-applets/cut"]
+tr = ["proteus-applets/tr"]
+uniq = ["proteus-applets/uniq"]
 
 # Shell
 sh = ["proteus-shell/sh"]
