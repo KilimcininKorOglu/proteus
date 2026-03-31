@@ -2,8 +2,8 @@
 
 **Last Updated:** 2026-03-31
 **Total Tasks:** 27
-**Completed:** 6
-**In Progress:** 1
+**Completed:** 7
+**In Progress:** 0
 **Not Started:** 20
 **Blocked:** 0
 
@@ -24,8 +24,8 @@
 - **P4 (Low):** 0 tasks
 
 ## Changes Since Last Update
-- Added: Implemented the v0.2 text batch applets `sed`, `sort`, `cut`, `tr`, and `uniq` with dispatch, feature wiring, metadata entries, and sandbox policy coverage.
-- Modified: Completed T007 and validated the new applets with release-build smoke tests against real sample files.
+- Added: Metadata-backed applet help output now supports `proteus <applet> --help` and `--help-full` with structured usage, options, and notes.
+- Modified: Completed T013 by extending compliance reporting to include help-aware metadata and validating the new output for `sed`, `cut`, and `ls`.
 - Warnings: PRD still states `MIT OR Apache-2.0`, but `Cargo.toml` is currently MIT-only. `cargo fmt --all --check` still reports pre-existing repository-wide formatting drift unrelated to this task.
 
 ## Milestone Timeline
@@ -40,10 +40,10 @@
 | v0.8-v1.0 | Compliance, CI, release, cross-platform       | F004             |
 
 ## Current Sprint Focus
-- T016: Expand POSIX grammar and execution coverage
 - T008: Implement the v0.3 file utility batch
 - T012: Fill remaining coreutils and misc gaps
-- T013: Define applet compliance and help coverage
+- T016: Expand POSIX grammar and execution coverage
+- T021: Create repository test structure
 
 ## Blocked Tasks
 - None currently blocked at the planning level.

@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use proteus_core::compliance::{AppletCategory, AppletMetadata, PosixLevel};
+use proteus_core::compliance::{AppletCategory, AppletHelp, AppletMetadata, AppletOption, PosixLevel};
 use proteus_core::platform::current_platform;
 use proteus_core::sandbox::{apply_sandbox_policy, SandboxMode, SandboxReport};
 use proteus_core::ProteusResult;
@@ -81,6 +81,10 @@ fn dispatch_multi_call(args: &[String]) -> i32 {
 }
 
 fn dispatch_applet(name: &str, args: &[String], runtime_options: &RuntimeOptions) -> i32 {
+    if let Some(help_mode) = parse_applet_help_mode(args) {
+        return print_applet_help(name, help_mode);
+    }
+
     let runtime_context = match prepare_runtime_context(name, runtime_options) {
         Ok(context) => context,
         Err(error) => {
@@ -295,7 +299,8 @@ fn print_posix_info(args: &[String]) -> i32 {
 
     match applet_metadata(applet_name) {
         Some(metadata) => {
-            for line in metadata.to_report_lines() {
+            let help = applet_help(applet_name);
+            for line in metadata.to_report_lines(help.as_ref()) {
                 println!("{line}");
             }
             0
@@ -305,6 +310,38 @@ fn print_posix_info(args: &[String]) -> i32 {
             1
         }
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum HelpMode {
+    Short,
+    Full,
+}
+
+fn parse_applet_help_mode(args: &[String]) -> Option<HelpMode> {
+    if args.iter().any(|arg| arg == "--help-full") {
+        Some(HelpMode::Full)
+    } else if args.iter().any(|arg| arg == "--help" || arg == "-h") {
+        Some(HelpMode::Short)
+    } else {
+        None
+    }
+}
+
+fn print_applet_help(name: &str, help_mode: HelpMode) -> i32 {
+    let Some(metadata) = applet_metadata(name) else {
+        eprintln!("proteus: applet '{name}' not found");
+        return 127;
+    };
+    let Some(help) = applet_help(name) else {
+        eprintln!("proteus: {name}: no help available");
+        return 1;
+    };
+
+    for line in metadata.to_help_lines(&help, matches!(help_mode, HelpMode::Full)) {
+        println!("{line}");
+    }
+    0
 }
 
 fn available_applets() -> Vec<&'static str> {
@@ -318,6 +355,116 @@ fn applet_metadata(name: &str) -> Option<AppletMetadata> {
     available_applet_metadata()
         .into_iter()
         .find(|metadata| metadata.name == name)
+}
+
+fn applet_help(name: &str) -> Option<AppletHelp> {
+    let help = match name {
+        "cat" => AppletHelp::new(
+            "proteus cat [-nbsETAtet] [FILE...]",
+            vec![
+                AppletOption::new("-n", "number output lines"),
+                AppletOption::new("-b", "number nonblank lines"),
+                AppletOption::new("-s", "suppress repeated blank lines"),
+                AppletOption::new("-E", "display $ at end of each line"),
+                AppletOption::new("-T", "display TAB as ^I"),
+            ],
+            vec!["Reads stdin when no FILE is provided.".to_string()],
+        ),
+        "cp" => AppletHelp::new(
+            "proteus cp [-rRfFi] SOURCE... DEST",
+            vec![
+                AppletOption::new("-r, -R", "copy directories recursively"),
+                AppletOption::new("-f", "force overwriting existing destinations"),
+                AppletOption::new("-i", "prompt before overwrite"),
+            ],
+            vec!["Multiple sources require DEST to be a directory.".to_string()],
+        ),
+        "cut" => AppletHelp::new(
+            "proteus cut (-c LIST | -f LIST [-d DELIM]) [FILE...]",
+            vec![
+                AppletOption::new("-c LIST", "select character positions"),
+                AppletOption::new("-f LIST", "select field positions"),
+                AppletOption::new("-d DELIM", "set field delimiter for -f mode"),
+            ],
+            vec!["Character mode is UTF-8 aware through the shared core helpers.".to_string()],
+        ),
+        "grep" => AppletHelp::new(
+            "proteus grep [-EFGclnqv] PATTERN [FILE...]",
+            vec![
+                AppletOption::new("-E", "use extended regular expressions"),
+                AppletOption::new("-F", "match fixed strings"),
+                AppletOption::new("-c", "print match counts"),
+                AppletOption::new("-l", "print matching file names only"),
+                AppletOption::new("-n", "print line numbers"),
+                AppletOption::new("-q", "exit on first match"),
+                AppletOption::new("-v", "invert match sense"),
+            ],
+            vec!["Use egrep/fgrep aliases for extended and fixed matching defaults.".to_string()],
+        ),
+        "egrep" => AppletHelp::new(
+            "proteus egrep [-clnqv] PATTERN [FILE...]",
+            vec![AppletOption::new("-c|-l|-n|-q|-v", "same filtering controls as grep")],
+            vec!["Equivalent to grep with extended regular expressions enabled.".to_string()],
+        ),
+        "fgrep" => AppletHelp::new(
+            "proteus fgrep [-clnqv] PATTERN [FILE...]",
+            vec![AppletOption::new("-c|-l|-n|-q|-v", "same filtering controls as grep")],
+            vec!["Equivalent to grep with fixed-string matching enabled.".to_string()],
+        ),
+        "ls" => AppletHelp::new(
+            "proteus ls [-a l R] [PATH...]",
+            vec![
+                AppletOption::new("-a", "include dotfiles"),
+                AppletOption::new("-l", "use long listing format"),
+                AppletOption::new("-R", "recurse into subdirectories"),
+            ],
+            vec!["Defaults to the current directory when no PATH is given.".to_string()],
+        ),
+        "sed" => AppletHelp::new(
+            "proteus sed [-e SCRIPT] SCRIPT [FILE...]",
+            vec![
+                AppletOption::new("-e SCRIPT", "provide an explicit editing script"),
+                AppletOption::new("s/old/new/[g]", "apply a basic substitute command"),
+            ],
+            vec!["Current implementation supports simple substitute scripts only.".to_string()],
+        ),
+        "sort" => AppletHelp::new(
+            "proteus sort [-ru] [FILE...]",
+            vec![
+                AppletOption::new("-r", "reverse the sorted output"),
+                AppletOption::new("-u", "suppress duplicate output lines"),
+            ],
+            vec!["Sorts the full input set in memory.".to_string()],
+        ),
+        "tr" => AppletHelp::new(
+            "proteus tr [-d] SET1 [SET2] [FILE...]",
+            vec![
+                AppletOption::new("-d", "delete characters from SET1 instead of translating"),
+                AppletOption::new("[:lower:]", "ASCII lowercase class"),
+                AppletOption::new("[:upper:]", "ASCII uppercase class"),
+            ],
+            vec!["Supports basic translate and delete flows with UTF-8 aware case helpers.".to_string()],
+        ),
+        "uniq" => AppletHelp::new(
+            "proteus uniq [-cdu] [FILE...]",
+            vec![
+                AppletOption::new("-c", "prefix each line with occurrence count"),
+                AppletOption::new("-d", "print only repeated lines"),
+                AppletOption::new("-u", "print only unique lines"),
+            ],
+            vec!["Only adjacent duplicate lines are coalesced.".to_string()],
+        ),
+        _ => {
+            let metadata = applet_metadata(name)?;
+            AppletHelp::new(
+                format!("proteus {} [args...]", metadata.name),
+                Vec::new(),
+                vec!["Detailed option coverage is not documented yet for this applet.".to_string()],
+            )
+        }
+    };
+
+    Some(help)
 }
 
 fn available_applet_metadata() -> Vec<AppletMetadata> {

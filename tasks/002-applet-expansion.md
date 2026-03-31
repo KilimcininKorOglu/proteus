@@ -215,7 +215,7 @@ This includes commands such as `printf`, `tee`, `env`, `uname`, `id`, `whoami`, 
 
 ### T013: Define applet-by-applet compliance and help coverage
 
-**Status:** NOT_STARTED
+**Status:** COMPLETED
 **Priority:** P2
 **Estimated Effort:** 3 days
 
