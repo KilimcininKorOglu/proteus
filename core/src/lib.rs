@@ -7,5 +7,6 @@ pub mod glob;
 pub mod regex;
 pub mod sandbox;
 pub mod platform;
+pub mod permissions;
 
 pub use error::{ProteusError, ProteusResult};
