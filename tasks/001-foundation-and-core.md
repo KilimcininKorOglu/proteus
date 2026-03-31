@@ -20,7 +20,7 @@ The current repository already contains substantial progress in this area. Core 
 
 ## Success Criteria
 - [ ] All tasks completed (T001-T006)
-- [ ] Core runtime and metadata layers are actively used by implemented applets
+- [x] Core runtime and metadata layers are actively used by implemented applets
 - [ ] Cargo feature graph matches shipped applet inventory without dead declarations
 - [ ] Build profiles are validated by successful workspace builds
 - [ ] Tests passing

@@ -2,7 +2,7 @@ use std::path::{Path, PathBuf};
 
 use proteus_core::compliance::{AppletCategory, AppletHelp, AppletMetadata, AppletOption, PosixLevel};
 use proteus_core::platform::current_platform;
-use proteus_core::sandbox::{apply_sandbox_policy, SandboxMode, SandboxReport};
+use proteus_core::sandbox::{apply_sandbox_policy, sandbox_report_for, SandboxMode, SandboxReport};
 use proteus_core::ProteusResult;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -63,6 +63,7 @@ fn dispatch_multi_call(args: &[String]) -> i32 {
             0
         }
         "--posix-info" => print_posix_info(&command_args[1..]),
+        "--sandbox-info" => print_sandbox_info(&command_args[1..], runtime_options.sandbox_mode),
         "--version" | "-V" => {
             println!("proteus {VERSION}");
             0
@@ -322,6 +323,34 @@ fn print_posix_info(args: &[String]) -> i32 {
         }
         None => {
             eprintln!("proteus: --posix-info: unknown applet '{applet_name}'");
+            1
+        }
+    }
+}
+
+fn print_sandbox_info(args: &[String], mode: SandboxMode) -> i32 {
+    let Some(applet_name) = args.first() else {
+        eprintln!("proteus: --sandbox-info: missing applet name");
+        return 2;
+    };
+
+    match sandbox_report_for(applet_name, mode) {
+        Ok(report) => {
+            println!("applet: {}", report.applet);
+            println!("mode: {}", report.mode);
+            println!("backend: {:?}", report.backend);
+            println!("applied: {}", if report.applied { "yes" } else { "no" });
+            println!("degraded: {}", if report.degraded { "yes" } else { "no" });
+            println!("supports_strict: {}", if report.policy.supports_strict { "yes" } else { "no" });
+            println!("syscalls: {}", report.policy.syscall_classes_as_strings().join(", "));
+            println!("capabilities: {}", report.policy.capabilities_as_strings().join(", "));
+            if !report.notes.is_empty() {
+                println!("notes: {}", report.notes.join(" | "));
+            }
+            0
+        }
+        Err(error) => {
+            eprintln!("proteus: --sandbox-info: {error}");
             1
         }
     }
@@ -959,6 +988,7 @@ fn print_help() {
     println!("    proteus --list");
     println!("    proteus --list-full");
     println!("    proteus --posix-info <applet>");
+    println!("    proteus --sandbox-info <applet>");
     println!("    proteus --install [-s|--symlink] [-f|--force] <directory>");
     println!("    proteus --uninstall <directory>");
     println!("    proteus --version");

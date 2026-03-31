@@ -85,7 +85,7 @@ The PRD also calls for cross-compile, QEMU, fuzz, audit, size-report, and compli
 
 ### T023: Formalize security modes and capability policy
 
-**Status:** NOT_STARTED
+**Status:** COMPLETED
 **Priority:** P1
 **Estimated Effort:** 3 days
 

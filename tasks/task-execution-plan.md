@@ -11,7 +11,7 @@
 | F001 - Foundation and Core     | IN_PROGRESS  | 6     | 4         | 67%      |
 | F002 - Applet Expansion        | IN_PROGRESS  | 8     | 3         | 50%      |
 | F003 - Shell POSIX Roadmap     | IN_PROGRESS  | 6     | 2         | 50%      |
-| F004 - Quality and Release     | NOT_STARTED  | 7     | 1         | 14%      |
+| F004 - Quality and Release     | NOT_STARTED  | 7     | 2         | 29%      |
 
 ## Execution Phases
 
@@ -61,7 +61,7 @@
 |------|---------------------------------------------------|--------------|----------|
 | T009 | Add process and network milestone applets         | NOT_STARTED  | P2       |
 | T010 | Add system utility and init milestone applets     | NOT_STARTED  | P2       |
-| T023 | Formalize security modes and capability policy    | NOT_STARTED  | P1       |
+| T023 | Formalize security modes and capability policy    | COMPLETED    | P1       |
 | T025 | Add cross-platform validation scaffolding         | NOT_STARTED  | P2       |
 
 ### Phase 5: Stabilization and Release Discipline
@@ -102,3 +102,4 @@
 | T015 | F003    | 2026-03-31  | Existing |
 | T016 | F003    | 2026-03-31  | Current  |
 | T021 | F004    | 2026-03-31  | Current  |
+| T023 | F004    | 2026-03-31  | Current  |

@@ -123,6 +123,44 @@ impl SandboxPolicy {
         }
     }
 
+    pub fn syscall_classes_as_strings(&self) -> Vec<&'static str> {
+        self.syscall_classes
+            .iter()
+            .map(|class| match class {
+                SyscallClass::ReadOnlyFs => "read-only-fs",
+                SyscallClass::WriteFs => "write-fs",
+                SyscallClass::Metadata => "metadata",
+                SyscallClass::Memory => "memory",
+                SyscallClass::Process => "process",
+                SyscallClass::Signal => "signal",
+                SyscallClass::Network => "network",
+                SyscallClass::Dns => "dns",
+                SyscallClass::Terminal => "terminal",
+                SyscallClass::Mount => "mount",
+                SyscallClass::Time => "time",
+                SyscallClass::Random => "random",
+            })
+            .collect()
+    }
+
+    pub fn capabilities_as_strings(&self) -> Vec<&'static str> {
+        self.capabilities_to_keep
+            .iter()
+            .map(|capability| match capability {
+                Capability::SysAdmin => "sys-admin",
+                Capability::NetAdmin => "net-admin",
+                Capability::NetRaw => "net-raw",
+                Capability::NetBindService => "net-bind-service",
+                Capability::Chown => "chown",
+                Capability::DacOverride => "dac-override",
+                Capability::Setuid => "setuid",
+                Capability::Setgid => "setgid",
+                Capability::Fowner => "fowner",
+                Capability::Kill => "kill",
+            })
+            .collect()
+    }
+
     pub fn with_syscalls(mut self, classes: &[SyscallClass]) -> Self {
         self.syscall_classes.extend(classes.iter().copied());
         self
@@ -262,6 +300,10 @@ pub fn detect_backend() -> SandboxBackend {
     {
         SandboxBackend::Noop
     }
+}
+
+pub fn sandbox_report_for(applet: &str, mode: SandboxMode) -> Result<SandboxReport, SandboxError> {
+    apply_sandbox_policy(applet, mode)
 }
 
 pub fn apply_sandbox_policy(applet: &str, mode: SandboxMode) -> Result<SandboxReport, SandboxError> {
