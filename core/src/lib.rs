@@ -4,5 +4,6 @@ pub mod utf8;
 pub mod io;
 pub mod locale;
 pub mod glob;
+pub mod regex;
 
 pub use error::{ProteusError, ProteusResult};
