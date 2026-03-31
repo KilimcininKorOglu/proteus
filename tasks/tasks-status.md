@@ -2,9 +2,9 @@
 
 **Last Updated:** 2026-03-31
 **Total Tasks:** 27
-**Completed:** 9
+**Completed:** 10
 **In Progress:** 0
-**Not Started:** 18
+**Not Started:** 17
 **Blocked:** 0
 
 ## Progress Overview
@@ -24,8 +24,8 @@
 - **P4 (Low):** 0 tasks
 
 ## Changes Since Last Update
-- Added: Shell non-interactive mode now supports `&&`, `||`, basic input/output redirection, `$?`, and positional parameter expansion through the parser/interpreter pipeline.
-- Modified: Completed T016 and validated shell conditionals, pipeline regression, builtin redirection, and positional argument expansion with release-build smoke tests.
+- Added: Repository test directories now exist with binary-level integration coverage for text/file applets and shell behavior, plus baseline compat and POSIX metadata checks.
+- Modified: Completed T021 and validated the new test structure with passing `cargo test --test textAndFileApplets --test shellBehavior` and a successful release build.
 - Warnings: PRD still states `MIT OR Apache-2.0`, but `Cargo.toml` is currently MIT-only. `cargo fmt --all --check` still reports pre-existing repository-wide formatting drift unrelated to this task.
 
 ## Milestone Timeline
@@ -41,9 +41,9 @@
 
 ## Current Sprint Focus
 - T012: Fill remaining coreutils and misc gaps
-- T021: Create repository test structure
 - T023: Formalize security modes and capability policy
 - T005: Add build tooling crate
+- T022: Add CI workflows
 
 ## Blocked Tasks
 - None currently blocked at the planning level.
