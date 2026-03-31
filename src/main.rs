@@ -1,3 +1,5 @@
+use std::path::{Path, PathBuf};
+
 use proteus_core::ProteusResult;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -38,6 +40,8 @@ fn dispatch_multi_call(args: &[String]) -> i32 {
             print_help();
             0
         }
+        "--install" => install_applets(&args[1..]),
+        "--uninstall" => uninstall_applets(&args[1..]),
         applet_name => {
             let applet_args = &args[1..];
             dispatch_applet(applet_name, applet_args)
@@ -48,8 +52,8 @@ fn dispatch_multi_call(args: &[String]) -> i32 {
 fn dispatch_applet(name: &str, args: &[String]) -> i32 {
     match dispatch(name, args) {
         Ok(code) => code,
-        Err(e) => {
-            eprintln!("proteus: {name}: {e}");
+        Err(error) => {
+            eprintln!("proteus: {name}: {error}");
             1
         }
     }
@@ -57,7 +61,6 @@ fn dispatch_applet(name: &str, args: &[String]) -> i32 {
 
 fn dispatch(name: &str, args: &[String]) -> ProteusResult<i32> {
     match name {
-        // Coreutils
         #[cfg(feature = "cat")]
         "cat" => proteus_applets::coreutils::run_cat(args),
         #[cfg(feature = "ls")]
@@ -100,11 +103,8 @@ fn dispatch(name: &str, args: &[String]) -> ProteusResult<i32> {
         "true" => proteus_applets::coreutils::run_true(args),
         #[cfg(feature = "false")]
         "false" => proteus_applets::coreutils::run_false(args),
-
-        // Shell
         #[cfg(feature = "sh")]
         "sh" => proteus_shell::run_shell(args),
-
         _ => {
             eprintln!("proteus: applet '{name}' not found");
             eprintln!("Try 'proteus --list' for a list of available applets.");
@@ -114,57 +114,163 @@ fn dispatch(name: &str, args: &[String]) -> ProteusResult<i32> {
 }
 
 fn list_applets() {
-    let mut applets: Vec<&str> = Vec::new();
+    for applet in available_applets() {
+        println!("{applet}");
+    }
+}
 
+fn available_applets() -> Vec<&'static str> {
+    let mut applets: Vec<&'static str> = Vec::new();
+
+    #[cfg(feature = "basename")]
+    applets.push("basename");
     #[cfg(feature = "cat")]
     applets.push("cat");
-    #[cfg(feature = "ls")]
-    applets.push("ls");
-    #[cfg(feature = "cp")]
-    applets.push("cp");
-    #[cfg(feature = "mv")]
-    applets.push("mv");
-    #[cfg(feature = "rm")]
-    applets.push("rm");
-    #[cfg(feature = "echo")]
-    applets.push("echo");
-    #[cfg(feature = "head")]
-    applets.push("head");
-    #[cfg(feature = "tail")]
-    applets.push("tail");
-    #[cfg(feature = "wc")]
-    applets.push("wc");
-    #[cfg(feature = "pwd")]
-    applets.push("pwd");
-    #[cfg(feature = "mkdir")]
-    applets.push("mkdir");
-    #[cfg(feature = "rmdir")]
-    applets.push("rmdir");
-    #[cfg(feature = "touch")]
-    applets.push("touch");
+    #[cfg(feature = "chgrp")]
+    applets.push("chgrp");
     #[cfg(feature = "chmod")]
     applets.push("chmod");
     #[cfg(feature = "chown")]
     applets.push("chown");
-    #[cfg(feature = "chgrp")]
-    applets.push("chgrp");
-    #[cfg(feature = "ln")]
-    applets.push("ln");
-    #[cfg(feature = "basename")]
-    applets.push("basename");
+    #[cfg(feature = "cp")]
+    applets.push("cp");
     #[cfg(feature = "dirname")]
     applets.push("dirname");
-    #[cfg(feature = "true")]
-    applets.push("true");
+    #[cfg(feature = "echo")]
+    applets.push("echo");
     #[cfg(feature = "false")]
     applets.push("false");
+    #[cfg(feature = "head")]
+    applets.push("head");
+    #[cfg(feature = "ln")]
+    applets.push("ln");
+    #[cfg(feature = "ls")]
+    applets.push("ls");
+    #[cfg(feature = "mkdir")]
+    applets.push("mkdir");
+    #[cfg(feature = "mv")]
+    applets.push("mv");
+    #[cfg(feature = "pwd")]
+    applets.push("pwd");
+    #[cfg(feature = "rm")]
+    applets.push("rm");
+    #[cfg(feature = "rmdir")]
+    applets.push("rmdir");
     #[cfg(feature = "sh")]
     applets.push("sh");
+    #[cfg(feature = "tail")]
+    applets.push("tail");
+    #[cfg(feature = "touch")]
+    applets.push("touch");
+    #[cfg(feature = "true")]
+    applets.push("true");
+    #[cfg(feature = "wc")]
+    applets.push("wc");
 
-    applets.sort();
-    for applet in &applets {
-        println!("{applet}");
+    applets.sort_unstable();
+    applets
+}
+
+fn install_applets(args: &[String]) -> i32 {
+    let mut symlink_mode = false;
+    let mut force = false;
+    let mut target_dir: Option<&str> = None;
+
+    for arg in args {
+        match arg.as_str() {
+            "-s" | "--symlink" => symlink_mode = true,
+            "-f" | "--force" => force = true,
+            value if value.starts_with('-') => {
+                eprintln!("proteus: --install: invalid option '{value}'");
+                return 2;
+            }
+            value => target_dir = Some(value),
+        }
     }
+
+    let Some(target_dir) = target_dir else {
+        eprintln!("proteus: --install: missing target directory");
+        return 2;
+    };
+
+    let target_path = Path::new(target_dir);
+    if !target_path.exists() {
+        eprintln!("proteus: --install: directory does not exist: {target_dir}");
+        return 1;
+    }
+    if !target_path.is_dir() {
+        eprintln!("proteus: --install: target is not a directory: {target_dir}");
+        return 1;
+    }
+
+    let exe_path = match std::env::current_exe() {
+        Ok(path) => path,
+        Err(error) => {
+            eprintln!("proteus: --install: unable to locate current executable: {error}");
+            return 1;
+        }
+    };
+
+    let mut had_error = false;
+    for applet in available_applets() {
+        let link_path = target_path.join(applet);
+        if link_path.exists() || link_path.is_symlink() {
+            if force {
+                if let Err(error) = std::fs::remove_file(&link_path) {
+                    eprintln!("proteus: --install: failed to remove {}: {error}", link_path.display());
+                    had_error = true;
+                    continue;
+                }
+            } else {
+                eprintln!("proteus: --install: target exists, use --force: {}", link_path.display());
+                had_error = true;
+                continue;
+            }
+        }
+
+        let result = if symlink_mode {
+            std::os::unix::fs::symlink(&exe_path, &link_path)
+        } else {
+            std::fs::hard_link(&exe_path, &link_path)
+        };
+
+        if let Err(error) = result {
+            eprintln!("proteus: --install: failed to create {}: {error}", link_path.display());
+            had_error = true;
+        }
+    }
+
+    if had_error { 1 } else { 0 }
+}
+
+fn uninstall_applets(args: &[String]) -> i32 {
+    if args.is_empty() {
+        eprintln!("proteus: --uninstall: missing target directory");
+        return 2;
+    }
+
+    let target_path = PathBuf::from(&args[0]);
+    if !target_path.exists() {
+        eprintln!("proteus: --uninstall: directory does not exist: {}", target_path.display());
+        return 1;
+    }
+    if !target_path.is_dir() {
+        eprintln!("proteus: --uninstall: target is not a directory: {}", target_path.display());
+        return 1;
+    }
+
+    let mut had_error = false;
+    for applet in available_applets() {
+        let link_path = target_path.join(applet);
+        if link_path.exists() || link_path.is_symlink() {
+            if let Err(error) = std::fs::remove_file(&link_path) {
+                eprintln!("proteus: --uninstall: failed to remove {}: {error}", link_path.display());
+                had_error = true;
+            }
+        }
+    }
+
+    if had_error { 1 } else { 0 }
 }
 
 fn print_help() {
@@ -174,10 +280,8 @@ fn print_help() {
     println!("USAGE:");
     println!("    proteus <applet> [args...]");
     println!("    proteus --list");
+    println!("    proteus --install [-s|--symlink] [-f|--force] <directory>");
+    println!("    proteus --uninstall <directory>");
     println!("    proteus --version");
     println!("    proteus --help");
-    println!();
-    println!("Applets are also available via symlinks:");
-    println!("    ln -s proteus cat");
-    println!("    ./cat file.txt");
 }
