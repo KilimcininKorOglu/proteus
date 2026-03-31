@@ -57,7 +57,7 @@ The repository already contains lexer, parser, interpreter, builtin modules, and
 
 ### T016: Expand POSIX grammar and execution coverage
 
-**Status:** IN_PROGRESS
+**Status:** COMPLETED
 **Priority:** P1
 **Estimated Effort:** 6 days
 

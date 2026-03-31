@@ -4,6 +4,11 @@ pub enum Token {
     Pipe,
     Semicolon,
     Newline,
+    AndIf,
+    OrIf,
+    RedirectIn,
+    RedirectOut,
+    RedirectAppend,
 }
 
 pub fn tokenize(input: &str) -> Result<Vec<Token>, String> {
@@ -23,11 +28,38 @@ pub fn tokenize(input: &str) -> Result<Vec<Token>, String> {
             }
             '|' if !in_single && !in_double => {
                 flush_word(&mut current, &mut tokens);
-                tokens.push(Token::Pipe);
+                if chars.peek() == Some(&'|') {
+                    chars.next();
+                    tokens.push(Token::OrIf);
+                } else {
+                    tokens.push(Token::Pipe);
+                }
+            }
+            '&' if !in_single && !in_double => {
+                flush_word(&mut current, &mut tokens);
+                if chars.peek() == Some(&'&') {
+                    chars.next();
+                    tokens.push(Token::AndIf);
+                } else {
+                    return Err("sh: unsupported operator `&'".to_string());
+                }
             }
             ';' if !in_single && !in_double => {
                 flush_word(&mut current, &mut tokens);
                 tokens.push(Token::Semicolon);
+            }
+            '<' if !in_single && !in_double => {
+                flush_word(&mut current, &mut tokens);
+                tokens.push(Token::RedirectIn);
+            }
+            '>' if !in_single && !in_double => {
+                flush_word(&mut current, &mut tokens);
+                if chars.peek() == Some(&'>') {
+                    chars.next();
+                    tokens.push(Token::RedirectAppend);
+                } else {
+                    tokens.push(Token::RedirectOut);
+                }
             }
             '\n' if !in_single && !in_double => {
                 flush_word(&mut current, &mut tokens);
@@ -42,6 +74,12 @@ pub fn tokenize(input: &str) -> Result<Vec<Token>, String> {
                 }
             }
             '$' if !in_single => {
+                if chars.peek() == Some(&'?') {
+                    chars.next();
+                    current.push_str(&std::env::var("PROTEUS_SHELL_LAST_EXIT").unwrap_or_else(|_| "0".to_string()));
+                    continue;
+                }
+
                 let mut name = String::new();
                 while let Some(next) = chars.peek().copied() {
                     if next.is_ascii_alphanumeric() || next == '_' {
@@ -53,6 +91,9 @@ pub fn tokenize(input: &str) -> Result<Vec<Token>, String> {
                 }
                 if name.is_empty() {
                     current.push('$');
+                } else if name.chars().all(|ch| ch.is_ascii_digit()) {
+                    let key = format!("PROTEUS_SHELL_ARG_{name}");
+                    current.push_str(&std::env::var(key).unwrap_or_default());
                 } else {
                     current.push_str(&std::env::var(&name).unwrap_or_default());
                 }

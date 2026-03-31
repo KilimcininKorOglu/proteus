@@ -2,9 +2,9 @@
 
 **Last Updated:** 2026-03-31
 **Total Tasks:** 27
-**Completed:** 8
+**Completed:** 9
 **In Progress:** 0
-**Not Started:** 19
+**Not Started:** 18
 **Blocked:** 0
 
 ## Progress Overview
@@ -24,8 +24,8 @@
 - **P4 (Low):** 0 tasks
 
 ## Changes Since Last Update
-- Added: Implemented the v0.3 file utility batch with `find`, `xargs`, `tar`, `gzip`, and a minimal print-oriented `awk` subset, including dispatch, metadata, help output, and sandbox coverage.
-- Modified: Completed T008 and validated the new applets with release-build smoke tests for traversal, argument expansion, archive create/extract, gzip round-trip, and awk field/record printing.
+- Added: Shell non-interactive mode now supports `&&`, `||`, basic input/output redirection, `$?`, and positional parameter expansion through the parser/interpreter pipeline.
+- Modified: Completed T016 and validated shell conditionals, pipeline regression, builtin redirection, and positional argument expansion with release-build smoke tests.
 - Warnings: PRD still states `MIT OR Apache-2.0`, but `Cargo.toml` is currently MIT-only. `cargo fmt --all --check` still reports pre-existing repository-wide formatting drift unrelated to this task.
 
 ## Milestone Timeline
@@ -41,9 +41,9 @@
 
 ## Current Sprint Focus
 - T012: Fill remaining coreutils and misc gaps
-- T016: Expand POSIX grammar and execution coverage
 - T021: Create repository test structure
 - T023: Formalize security modes and capability policy
+- T005: Add build tooling crate
 
 ## Blocked Tasks
 - None currently blocked at the planning level.
