@@ -8,5 +8,6 @@ pub mod regex;
 pub mod sandbox;
 pub mod platform;
 pub mod permissions;
+pub mod compliance;
 
 pub use error::{ProteusError, ProteusResult};

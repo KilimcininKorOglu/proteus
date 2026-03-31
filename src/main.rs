@@ -1,5 +1,6 @@
 use std::path::{Path, PathBuf};
 
+use proteus_core::compliance::{AppletCategory, AppletMetadata, PosixLevel};
 use proteus_core::ProteusResult;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -32,6 +33,11 @@ fn dispatch_multi_call(args: &[String]) -> i32 {
             list_applets();
             0
         }
+        "--list-full" => {
+            list_applets_full();
+            0
+        }
+        "--posix-info" => print_posix_info(&args[1..]),
         "--version" | "-V" => {
             println!("proteus {VERSION}");
             0
@@ -119,55 +125,254 @@ fn list_applets() {
     }
 }
 
+fn list_applets_full() {
+    for metadata in available_applet_metadata() {
+        println!(
+            "{:<12} {:<16} {:<12} {}",
+            metadata.name,
+            metadata.category.as_str(),
+            metadata.posix_level.as_str(),
+            metadata.description
+        );
+    }
+}
+
+fn print_posix_info(args: &[String]) -> i32 {
+    let Some(applet_name) = args.first() else {
+        eprintln!("proteus: --posix-info: missing applet name");
+        return 2;
+    };
+
+    match applet_metadata(applet_name) {
+        Some(metadata) => {
+            for line in metadata.to_report_lines() {
+                println!("{line}");
+            }
+            0
+        }
+        None => {
+            eprintln!("proteus: --posix-info: unknown applet '{applet_name}'");
+            1
+        }
+    }
+}
+
 fn available_applets() -> Vec<&'static str> {
-    let mut applets: Vec<&'static str> = Vec::new();
+    available_applet_metadata()
+        .iter()
+        .map(|metadata| metadata.name)
+        .collect()
+}
+
+fn applet_metadata(name: &str) -> Option<AppletMetadata> {
+    available_applet_metadata()
+        .into_iter()
+        .find(|metadata| metadata.name == name)
+}
+
+fn available_applet_metadata() -> Vec<AppletMetadata> {
+    let mut applets: Vec<AppletMetadata> = Vec::new();
 
     #[cfg(feature = "basename")]
-    applets.push("basename");
+    applets.push(AppletMetadata::new(
+        "basename",
+        AppletCategory::Coreutils,
+        PosixLevel::Substantial,
+        "Strip directory components from a path",
+        "basename",
+        true,
+    ));
     #[cfg(feature = "cat")]
-    applets.push("cat");
+    applets.push(AppletMetadata::new(
+        "cat",
+        AppletCategory::Coreutils,
+        PosixLevel::Substantial,
+        "Concatenate files to standard output",
+        "cat",
+        true,
+    ));
     #[cfg(feature = "chgrp")]
-    applets.push("chgrp");
+    applets.push(AppletMetadata::new(
+        "chgrp",
+        AppletCategory::Coreutils,
+        PosixLevel::Partial,
+        "Change file group ownership",
+        "chgrp",
+        true,
+    ));
     #[cfg(feature = "chmod")]
-    applets.push("chmod");
+    applets.push(AppletMetadata::new(
+        "chmod",
+        AppletCategory::Coreutils,
+        PosixLevel::Partial,
+        "Change file mode bits",
+        "chmod",
+        true,
+    ));
     #[cfg(feature = "chown")]
-    applets.push("chown");
+    applets.push(AppletMetadata::new(
+        "chown",
+        AppletCategory::Coreutils,
+        PosixLevel::Partial,
+        "Change file owner and group",
+        "chown",
+        true,
+    ));
     #[cfg(feature = "cp")]
-    applets.push("cp");
+    applets.push(AppletMetadata::new(
+        "cp",
+        AppletCategory::Coreutils,
+        PosixLevel::Partial,
+        "Copy files and directories",
+        "cp",
+        true,
+    ));
     #[cfg(feature = "dirname")]
-    applets.push("dirname");
+    applets.push(AppletMetadata::new(
+        "dirname",
+        AppletCategory::Coreutils,
+        PosixLevel::Substantial,
+        "Strip last path component",
+        "dirname",
+        true,
+    ));
     #[cfg(feature = "echo")]
-    applets.push("echo");
+    applets.push(AppletMetadata::new(
+        "echo",
+        AppletCategory::Coreutils,
+        PosixLevel::Partial,
+        "Write arguments to standard output",
+        "echo",
+        true,
+    ));
     #[cfg(feature = "false")]
-    applets.push("false");
+    applets.push(AppletMetadata::new(
+        "false",
+        AppletCategory::Coreutils,
+        PosixLevel::Full,
+        "Return a non-zero exit status",
+        "false",
+        true,
+    ));
     #[cfg(feature = "head")]
-    applets.push("head");
+    applets.push(AppletMetadata::new(
+        "head",
+        AppletCategory::TextProcessing,
+        PosixLevel::Partial,
+        "Print the first lines of files",
+        "head",
+        true,
+    ));
     #[cfg(feature = "ln")]
-    applets.push("ln");
+    applets.push(AppletMetadata::new(
+        "ln",
+        AppletCategory::Coreutils,
+        PosixLevel::Substantial,
+        "Create file links",
+        "ln",
+        true,
+    ));
     #[cfg(feature = "ls")]
-    applets.push("ls");
+    applets.push(AppletMetadata::new(
+        "ls",
+        AppletCategory::Coreutils,
+        PosixLevel::Partial,
+        "List directory contents",
+        "ls",
+        true,
+    ));
     #[cfg(feature = "mkdir")]
-    applets.push("mkdir");
+    applets.push(AppletMetadata::new(
+        "mkdir",
+        AppletCategory::Coreutils,
+        PosixLevel::Substantial,
+        "Create directories",
+        "mkdir",
+        true,
+    ));
     #[cfg(feature = "mv")]
-    applets.push("mv");
+    applets.push(AppletMetadata::new(
+        "mv",
+        AppletCategory::Coreutils,
+        PosixLevel::Substantial,
+        "Move or rename files",
+        "mv",
+        true,
+    ));
     #[cfg(feature = "pwd")]
-    applets.push("pwd");
+    applets.push(AppletMetadata::new(
+        "pwd",
+        AppletCategory::Coreutils,
+        PosixLevel::Full,
+        "Print working directory",
+        "pwd",
+        true,
+    ));
     #[cfg(feature = "rm")]
-    applets.push("rm");
+    applets.push(AppletMetadata::new(
+        "rm",
+        AppletCategory::Coreutils,
+        PosixLevel::Substantial,
+        "Remove files or directories",
+        "rm",
+        true,
+    ));
     #[cfg(feature = "rmdir")]
-    applets.push("rmdir");
+    applets.push(AppletMetadata::new(
+        "rmdir",
+        AppletCategory::Coreutils,
+        PosixLevel::Substantial,
+        "Remove empty directories",
+        "rmdir",
+        true,
+    ));
     #[cfg(feature = "sh")]
-    applets.push("sh");
+    applets.push(AppletMetadata::new(
+        "sh",
+        AppletCategory::Shell,
+        PosixLevel::Partial,
+        "Run the Nereus POSIX shell subset",
+        "sh",
+        true,
+    ));
     #[cfg(feature = "tail")]
-    applets.push("tail");
+    applets.push(AppletMetadata::new(
+        "tail",
+        AppletCategory::TextProcessing,
+        PosixLevel::Partial,
+        "Print the last lines of files",
+        "tail",
+        true,
+    ));
     #[cfg(feature = "touch")]
-    applets.push("touch");
+    applets.push(AppletMetadata::new(
+        "touch",
+        AppletCategory::Coreutils,
+        PosixLevel::Substantial,
+        "Update file timestamps",
+        "touch",
+        true,
+    ));
     #[cfg(feature = "true")]
-    applets.push("true");
+    applets.push(AppletMetadata::new(
+        "true",
+        AppletCategory::Coreutils,
+        PosixLevel::Full,
+        "Return a zero exit status",
+        "true",
+        true,
+    ));
     #[cfg(feature = "wc")]
-    applets.push("wc");
+    applets.push(AppletMetadata::new(
+        "wc",
+        AppletCategory::TextProcessing,
+        PosixLevel::Partial,
+        "Count lines, words, and bytes",
+        "wc",
+        true,
+    ));
 
-    applets.sort_unstable();
+    applets.sort_unstable_by_key(|metadata| metadata.name);
     applets
 }
 
@@ -280,6 +485,8 @@ fn print_help() {
     println!("USAGE:");
     println!("    proteus <applet> [args...]");
     println!("    proteus --list");
+    println!("    proteus --list-full");
+    println!("    proteus --posix-info <applet>");
     println!("    proteus --install [-s|--symlink] [-f|--force] <directory>");
     println!("    proteus --uninstall <directory>");
     println!("    proteus --version");
