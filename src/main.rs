@@ -109,6 +109,12 @@ fn dispatch(name: &str, args: &[String]) -> ProteusResult<i32> {
         "true" => proteus_applets::coreutils::run_true(args),
         #[cfg(feature = "false")]
         "false" => proteus_applets::coreutils::run_false(args),
+        #[cfg(feature = "grep")]
+        "grep" => proteus_applets::textutils::grep::run(args),
+        #[cfg(feature = "egrep")]
+        "egrep" => proteus_applets::textutils::egrep::run(args),
+        #[cfg(feature = "fgrep")]
+        "fgrep" => proteus_applets::textutils::fgrep::run(args),
         #[cfg(feature = "sh")]
         "sh" => proteus_shell::run_shell(args),
         _ => {
@@ -252,6 +258,33 @@ fn available_applet_metadata() -> Vec<AppletMetadata> {
         PosixLevel::Full,
         "Return a non-zero exit status",
         "false",
+        true,
+    ));
+    #[cfg(feature = "egrep")]
+    applets.push(AppletMetadata::new(
+        "egrep",
+        AppletCategory::TextProcessing,
+        PosixLevel::Partial,
+        "Search files using extended regular expressions",
+        "egrep",
+        true,
+    ));
+    #[cfg(feature = "fgrep")]
+    applets.push(AppletMetadata::new(
+        "fgrep",
+        AppletCategory::TextProcessing,
+        PosixLevel::Partial,
+        "Search files using fixed-string patterns",
+        "fgrep",
+        true,
+    ));
+    #[cfg(feature = "grep")]
+    applets.push(AppletMetadata::new(
+        "grep",
+        AppletCategory::TextProcessing,
+        PosixLevel::Partial,
+        "Search files using basic regular expressions",
+        "grep",
         true,
     ));
     #[cfg(feature = "head")]

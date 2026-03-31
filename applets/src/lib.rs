@@ -1,4 +1,5 @@
 pub mod coreutils;
+pub mod textutils;
 
 use proteus_core::ProteusResult;
 
