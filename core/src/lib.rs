@@ -6,5 +6,6 @@ pub mod locale;
 pub mod glob;
 pub mod regex;
 pub mod sandbox;
+pub mod platform;
 
 pub use error::{ProteusError, ProteusResult};
