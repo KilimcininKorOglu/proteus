@@ -102,6 +102,17 @@ impl fmt::Display for SandboxMode {
     }
 }
 
+impl SandboxMode {
+    pub fn parse(value: &str) -> Option<Self> {
+        match value {
+            "strict" => Some(Self::Strict),
+            "permissive" => Some(Self::Permissive),
+            "off" => Some(Self::Off),
+            _ => None,
+        }
+    }
+}
+
 impl SandboxPolicy {
     pub fn new(applet: impl Into<String>) -> Self {
         Self {
@@ -175,6 +186,15 @@ pub fn default_policy_for(applet: &str) -> Option<SandboxPolicy> {
         ),
         "echo" | "true" | "false" => Some(
             SandboxPolicy::new(applet).with_syscalls(&[
+                SyscallClass::Process,
+                SyscallClass::Terminal,
+            ]),
+        ),
+        "grep" | "egrep" | "fgrep" => Some(
+            SandboxPolicy::new(applet).with_syscalls(&[
+                SyscallClass::ReadOnlyFs,
+                SyscallClass::Metadata,
+                SyscallClass::Memory,
                 SyscallClass::Process,
                 SyscallClass::Terminal,
             ]),
@@ -263,8 +283,13 @@ pub fn drop_capabilities(keep: &[Capability]) -> Result<(), SandboxError> {
     let _keep = keep;
     #[cfg(target_os = "linux")]
     {
-        // Real capability dropping will be implemented when applet execution is wired.
-        // For now this is a safe no-op API surface that validates call sites.
+        let result = unsafe { libc::prctl(libc::PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) };
+        if result != 0 {
+            return Err(SandboxError::CapabilityDropFailed(
+                std::io::Error::last_os_error().to_string(),
+            ));
+        }
+
         Ok(())
     }
     #[cfg(not(target_os = "linux"))]

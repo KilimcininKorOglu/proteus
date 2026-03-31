@@ -2,8 +2,8 @@
 
 **Last Updated:** 2026-03-31
 **Total Tasks:** 27
-**Completed:** 4
-**In Progress:** 3
+**Completed:** 5
+**In Progress:** 2
 **Not Started:** 20
 **Blocked:** 0
 
@@ -24,9 +24,9 @@
 - **P4 (Low):** 0 tasks
 
 ## Changes Since Last Update
-- Added: Recreated the full `tasks/` planning structure from `proteus-prd.md` because the working tree did not contain prior task files.
-- Modified: Completed T004 by reconciling root and applet feature declarations with the actually implemented applet set and active build profiles.
-- Warnings: PRD still states `MIT OR Apache-2.0`, but `Cargo.toml` is currently MIT-only. PRD category mapping also differs from the current source layout for `head`, `tail`, and `wc`.
+- Added: Runtime sandbox flags now exist in the CLI surface and are applied before dispatch for implemented applets with known sandbox policies.
+- Modified: Completed T003 by wiring sandbox mode parsing and platform-backed runtime context preparation into applet execution.
+- Warnings: PRD still states `MIT OR Apache-2.0`, but `Cargo.toml` is currently MIT-only. `cargo fmt --all --check` still reports pre-existing repository-wide formatting drift unrelated to this task.
 
 ## Milestone Timeline
 | Milestone | Scope Focus                                  | Related Features |
@@ -40,10 +40,10 @@
 | v0.8-v1.0 | Compliance, CI, release, cross-platform       | F004             |
 
 ## Current Sprint Focus
-- T003: Wire sandbox and platform abstractions into runtime execution
 - T007: Complete the planned v0.2 text processing batch
 - T016: Expand POSIX grammar and execution coverage
 - T008: Implement the v0.3 file utility batch
+- T012: Fill remaining coreutils and misc gaps
 
 ## Blocked Tasks
 - None currently blocked at the planning level.

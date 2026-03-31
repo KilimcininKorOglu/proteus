@@ -8,7 +8,7 @@
 
 | Feature                        | Status       | Tasks | Completed | Progress |
 |--------------------------------|--------------|-------|-----------|----------|
-| F001 - Foundation and Core     | IN_PROGRESS  | 6     | 3         | 50%      |
+| F001 - Foundation and Core     | IN_PROGRESS  | 6     | 4         | 67%      |
 | F002 - Applet Expansion        | IN_PROGRESS  | 8     | 0         | 13%      |
 | F003 - Shell POSIX Roadmap     | IN_PROGRESS  | 6     | 1         | 33%      |
 | F004 - Quality and Release     | NOT_STARTED  | 7     | 0         | 0%       |
@@ -22,7 +22,7 @@
 
 | Task | Name                                              | Status       | Priority |
 |------|---------------------------------------------------|--------------|----------|
-| T003 | Wire sandbox and platform abstractions            | NOT_STARTED  | P1       |
+| T003 | Wire sandbox and platform abstractions            | COMPLETED    | P1       |
 | T004 | Reconcile feature declarations                    | COMPLETED    | P1       |
 | T005 | Add build tooling crate                           | NOT_STARTED  | P2       |
 | T006 | Finalize foundation milestone boundaries          | NOT_STARTED  | P2       |
@@ -94,5 +94,6 @@
 |------|---------|-------------|----------|
 | T001 | F001    | 2026-03-31  | Existing |
 | T002 | F001    | 2026-03-31  | Existing |
+| T003 | F001    | 2026-03-31  | Current  |
 | T004 | F001    | 2026-03-31  | Current  |
 | T015 | F003    | 2026-03-31  | Existing |

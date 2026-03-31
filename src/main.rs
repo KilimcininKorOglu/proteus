@@ -1,9 +1,23 @@
 use std::path::{Path, PathBuf};
 
 use proteus_core::compliance::{AppletCategory, AppletMetadata, PosixLevel};
+use proteus_core::platform::current_platform;
+use proteus_core::sandbox::{apply_sandbox_policy, SandboxMode, SandboxReport};
 use proteus_core::ProteusResult;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
+
+#[derive(Debug, Clone)]
+struct RuntimeOptions {
+    sandbox_mode: SandboxMode,
+}
+
+#[derive(Debug, Clone)]
+struct RuntimeContext {
+    sandbox_report: Option<SandboxReport>,
+    platform_name: &'static str,
+    page_size: usize,
+}
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -15,20 +29,31 @@ fn main() {
     let exit_code = if argv0 == "proteus" {
         dispatch_multi_call(&args[1..])
     } else {
-        dispatch_applet(&argv0, &args[1..])
+        dispatch_applet(
+            &argv0,
+            &args[1..],
+            &RuntimeOptions {
+                sandbox_mode: SandboxMode::Strict,
+            },
+        )
     };
 
     std::process::exit(exit_code);
 }
 
 fn dispatch_multi_call(args: &[String]) -> i32 {
-    if args.is_empty() {
+    let (runtime_options, command_args) = match parse_runtime_options(args) {
+        Ok(result) => result,
+        Err(code) => return code,
+    };
+
+    if command_args.is_empty() {
         eprintln!("proteus: no applet specified");
         eprintln!("Try 'proteus --list' for a list of available applets.");
         return 1;
     }
 
-    match args[0].as_str() {
+    match command_args[0].as_str() {
         "--list" => {
             list_applets();
             0
@@ -37,7 +62,7 @@ fn dispatch_multi_call(args: &[String]) -> i32 {
             list_applets_full();
             0
         }
-        "--posix-info" => print_posix_info(&args[1..]),
+        "--posix-info" => print_posix_info(&command_args[1..]),
         "--version" | "-V" => {
             println!("proteus {VERSION}");
             0
@@ -46,17 +71,25 @@ fn dispatch_multi_call(args: &[String]) -> i32 {
             print_help();
             0
         }
-        "--install" => install_applets(&args[1..]),
-        "--uninstall" => uninstall_applets(&args[1..]),
+        "--install" => install_applets(&command_args[1..]),
+        "--uninstall" => uninstall_applets(&command_args[1..]),
         applet_name => {
-            let applet_args = &args[1..];
-            dispatch_applet(applet_name, applet_args)
+            let applet_args = &command_args[1..];
+            dispatch_applet(applet_name, applet_args, &runtime_options)
         }
     }
 }
 
-fn dispatch_applet(name: &str, args: &[String]) -> i32 {
-    match dispatch(name, args) {
+fn dispatch_applet(name: &str, args: &[String], runtime_options: &RuntimeOptions) -> i32 {
+    let runtime_context = match prepare_runtime_context(name, runtime_options) {
+        Ok(context) => context,
+        Err(error) => {
+            eprintln!("proteus: {name}: {error}");
+            return 1;
+        }
+    };
+
+    match dispatch(name, args, &runtime_context) {
         Ok(code) => code,
         Err(error) => {
             eprintln!("proteus: {name}: {error}");
@@ -65,7 +98,11 @@ fn dispatch_applet(name: &str, args: &[String]) -> i32 {
     }
 }
 
-fn dispatch(name: &str, args: &[String]) -> ProteusResult<i32> {
+fn dispatch(name: &str, args: &[String], runtime_context: &RuntimeContext) -> ProteusResult<i32> {
+    let _ = runtime_context.page_size;
+    let _ = runtime_context.platform_name;
+    let _ = &runtime_context.sandbox_report;
+
     match name {
         #[cfg(feature = "cat")]
         "cat" => proteus_applets::coreutils::run_cat(args),
@@ -129,6 +166,98 @@ fn list_applets() {
     for applet in available_applets() {
         println!("{applet}");
     }
+}
+
+fn parse_runtime_options(args: &[String]) -> Result<(RuntimeOptions, &[String]), i32> {
+    let mut sandbox_mode = SandboxMode::Strict;
+    let mut index = 0;
+
+    while index < args.len() {
+        match args[index].as_str() {
+            "--no-sandbox" => {
+                sandbox_mode = SandboxMode::Off;
+                index += 1;
+            }
+            value if value.starts_with("--sandbox=") => {
+                let mode_value = &value[10..];
+                let Some(mode) = SandboxMode::parse(mode_value) else {
+                    eprintln!("proteus: invalid sandbox mode '{mode_value}'");
+                    return Err(2);
+                };
+                sandbox_mode = mode;
+                index += 1;
+            }
+            "--sandbox" => {
+                index += 1;
+                if index >= args.len() {
+                    eprintln!("proteus: --sandbox requires a mode");
+                    return Err(2);
+                }
+                let mode_value = &args[index];
+                let Some(mode) = SandboxMode::parse(mode_value) else {
+                    eprintln!("proteus: invalid sandbox mode '{mode_value}'");
+                    return Err(2);
+                };
+                sandbox_mode = mode;
+                index += 1;
+            }
+            _ => break,
+        }
+    }
+
+    Ok((RuntimeOptions { sandbox_mode }, &args[index..]))
+}
+
+fn prepare_runtime_context(
+    applet_name: &str,
+    runtime_options: &RuntimeOptions,
+) -> Result<RuntimeContext, proteus_core::ProteusError> {
+    let platform = current_platform();
+    let sandbox_report = if default_sandboxed_applet(applet_name) {
+        Some(
+            apply_sandbox_policy(applet_name, runtime_options.sandbox_mode)
+                .map_err(|error| proteus_core::ProteusError::Other(error.to_string()))?,
+        )
+    } else {
+        None
+    };
+
+    Ok(RuntimeContext {
+        sandbox_report,
+        platform_name: platform.name(),
+        page_size: platform.page_size(),
+    })
+}
+
+fn default_sandboxed_applet(applet_name: &str) -> bool {
+    matches!(
+        applet_name,
+        "cat"
+            | "ls"
+            | "cp"
+            | "mv"
+            | "rm"
+            | "echo"
+            | "head"
+            | "tail"
+            | "wc"
+            | "pwd"
+            | "mkdir"
+            | "rmdir"
+            | "touch"
+            | "chmod"
+            | "chown"
+            | "chgrp"
+            | "ln"
+            | "basename"
+            | "dirname"
+            | "true"
+            | "false"
+            | "grep"
+            | "egrep"
+            | "fgrep"
+            | "sh"
+    )
 }
 
 fn list_applets_full() {
@@ -517,6 +646,8 @@ fn print_help() {
     println!();
     println!("USAGE:");
     println!("    proteus <applet> [args...]");
+    println!("    proteus [--sandbox <strict|permissive|off>] <applet> [args...]");
+    println!("    proteus [--no-sandbox] <applet> [args...]");
     println!("    proteus --list");
     println!("    proteus --list-full");
     println!("    proteus --posix-info <applet>");
